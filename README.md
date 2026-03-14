@@ -44,18 +44,6 @@ python run.py
 
 Then open: https://school-management-modernized.onrender.com/
 
----
-
-## 🔑 Default Login Credentials
-
-| Role    | Username  | Password     |
-|---------|-----------|--------------|
-| Admin   | admin     | admin123     |
-| Teacher | teacher1  | teacher123   |
-| Student | student1  | student123   |
-| Parent  | parent1   | parent123    |
-
----
 
 ## 📁 Project Structure
 
