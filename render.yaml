@@ -1,6 +1,7 @@
 services:
   - type: web
-    name: school-management-system
+    name: montfort-sec
+    plan: free
     env: python
     buildCommand: pip install -r requirements.txt
     startCommand: gunicorn app:app
