@@ -1,0 +1,40 @@
+{% extends "dashboard_base.html" %}
+{% block title %}My Timetable{% endblock %}
+{% block content %}
+<div class="page-header"><h1><i class="fas fa-calendar-alt"></i> My Class Timetable</h1></div>
+{% set has_tt = false %}
+{% for day, periods in tt_by_day.items() %}{% if periods %}{% set has_tt = true %}{% endif %}{% endfor %}
+{% if has_tt %}
+<div style="overflow-x:auto;">
+  <table style="width:100%;border-collapse:collapse;min-width:700px;">
+    <thead>
+      <tr>
+        <th style="background:var(--primary);color:#fff;padding:12px 16px;text-align:left;min-width:120px;">Day</th>
+        {% for p in range(1,8) %}
+        <th style="background:var(--primary);color:#fff;padding:12px;text-align:center;">Period {{ p }}</th>
+        {% endfor %}
+      </tr>
+    </thead>
+    <tbody>
+      {% for day in days %}
+      {% set periods = tt_by_day[day] %}
+      <tr>
+        <td style="padding:12px 16px;font-weight:700;color:var(--primary);background:#f8f9fa;border-bottom:1px solid var(--border);">{{ day }}</td>
+        {% for p in range(1,8) %}
+        {% set entry = periods | selectattr('period','equalto',p|string) | first | default(none) %}
+        {% if not entry %}{% set entry = (periods | selectattr('period','equalto',p) | first) %}{% endif %}
+        <td style="padding:10px;border:1px solid var(--border);text-align:center;font-size:0.85rem;">
+          {% if entry %}
+          <div style="background:#e8eaf6;border-radius:6px;padding:6px;"><div style="font-weight:600;color:var(--primary);">{{ subjects_map.get(entry.subject_id|string,'') }}</div><div style="font-size:0.78rem;color:#888;">{{ teachers_map.get(entry.teacher_id|string,'') }}</div><div style="font-size:0.75rem;color:#aaa;">{{ entry.start_time }}-{{ entry.end_time }}</div></div>
+          {% else %}<span style="color:#ccc;font-size:0.8rem;">—</span>{% endif %}
+        </td>
+        {% endfor %}
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<div class="card"><div class="card-body" style="text-align:center;padding:3rem;color:#999;"><i class="fas fa-calendar fa-3x" style="display:block;margin-bottom:1rem;"></i>Timetable not yet configured for your class.</div></div>
+{% endif %}
+{% endblock %}

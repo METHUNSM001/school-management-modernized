@@ -1,0 +1,164 @@
+{% extends "dashboard_base.html" %}
+{% block title %}Manage Students - MONTFORT SCHOOL{% endblock %}
+{% block extra_css %}
+<style>
+.management-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 2rem;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+}
+.filter-card {
+    background: #fff;
+    border-radius: 20px;
+    padding: 1.25rem;
+    border: 1px solid var(--border);
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    align-items: center;
+    box-shadow: var(--shadow-sm);
+}
+.search-box-premium {
+    flex: 1;
+    min-width: 250px;
+    position: relative;
+}
+.search-box-premium i {
+    position: absolute;
+    left: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--muted);
+}
+.search-box-premium input {
+    padding-left: 42px;
+    height: 48px;
+    border-radius: 12px;
+}
+.filter-select {
+    height: 48px;
+    border-radius: 12px;
+    min-width: 160px;
+    background-color: var(--bg);
+    cursor: pointer;
+}
+</style>
+{% endblock %}
+{% block content %}
+<div class="management-header">
+  <div>
+    <h1 style="font-size: 1.75rem; font-weight: 800; color: var(--text); letter-spacing: -0.5px;">Student Directory</h1>
+    <p style="color: var(--muted); font-size: 0.9rem; font-weight: 500;">Manage and monitor all student profiles and academic statuses.</p>
+  </div>
+  <a href="{{ url_for('admin_add_student') }}" class="btn btn-primary" style="height: 48px; padding: 0 24px;">
+    <i class="fas fa-user-plus"></i> Register New Student
+  </a>
+</div>
+
+<!-- FILTERS -->
+<div class="filter-card" style="margin-bottom: 2rem;">
+  <div class="search-box-premium">
+    <i class="fas fa-search"></i>
+    <input type="text" id="stuSearch" class="form-control" placeholder="Search by name, roll no, or parent...">
+  </div>
+  <select id="classFilter" class="form-control filter-select" onchange="filterByClass()" style="appearance: auto;">
+    <option value="">All Classes</option>
+    {% for c in ['PRE-KG','LKG','UKG','Class 1','Class 2','Class 3','Class 4','Class 5','Class 6','Class 7','Class 8','Class 9','Class 10','Class 11 - BIO/MATHS','Class 11 - BIO/CS','Class 11 - MATHS/CS','Class 11 - ARTS','Class 12 - BIO/MATHS','Class 12 - BIO/CS','Class 12 - MATHS/CS','Class 12 - ARTS'] %}
+    <option value="{{ c }}">{{ c }}</option>
+    {% endfor %}
+  </select>
+  <select id="statusFilter" class="form-control filter-select" onchange="filterByClass()" style="appearance: auto;">
+    <option value="">All Status</option>
+    <option value="active">Active</option>
+    <option value="inactive">Inactive</option>
+  </select>
+</div>
+
+<div class="card" style="border-radius: 20px; border: none; box-shadow: var(--shadow-md);">
+  <div class="table-wrap">
+    <table id="studentsTable">
+      <thead>
+        <tr>
+          <th style="padding-left: 24px;">ID / Roll No</th>
+          <th>Student Name</th>
+          <th>Class & Section</th>
+          <th>Parent Info</th>
+          <th>Account Status</th>
+          <th style="padding-right: 24px; text-align: right;">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for s in students %}
+        <tr data-class="{{ s.class_id }}" data-status="{{ s.status }}">
+          <td style="padding-left: 24px;">
+            <div style="font-weight: 700; color: var(--primary);">#{{ loop.index }}</div>
+            <div style="font-size: 0.75rem; color: var(--muted); font-weight: 600;">{{ s.roll_no }}</div>
+          </td>
+          <td>
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <div style="width: 36px; height: 36px; border-radius: 10px; background: var(--primary-glow); color: var(--primary); display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.85rem;">
+                {{ s.name[0] | upper }}
+              </div>
+              <div style="font-weight: 600;">{{ s.name }}</div>
+            </div>
+          </td>
+          <td>
+            <div style="font-weight: 600;">{{ s.class_id }}</div>
+            <div style="font-size: 0.75rem; color: var(--muted);">Section {{ s.section if s.section else 'N/A' }}</div>
+          </td>
+          <td>
+            <div style="font-weight: 500;">{{ s.parent_name }}</div>
+            <div style="font-size: 0.75rem; color: var(--muted);"><i class="fas fa-phone-alt" style="font-size: 0.7rem;"></i> {{ s.parent_phone }}</div>
+          </td>
+          <td>
+            <span class="badge badge-{{ 'success' if s.status=='active' else 'danger' }}" style="padding: 6px 12px; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.5px;">
+              {{ s.status if s.status else 'Active' }}
+            </span>
+          </td>
+          <td style="padding-right: 24px; text-align: right;">
+            <div style="display: flex; gap: 8px; justify-content: flex-end;">
+              <a href="{{ url_for('admin_view_student', sid=s.id) }}" class="nav-tool" style="background: var(--bg);" title="View Details"><i class="fas fa-eye"></i></a>
+              <a href="{{ url_for('admin_edit_student', sid=s.id) }}" class="nav-tool" style="background: #fffbeb; color: #92400e;" title="Edit Profile"><i class="fas fa-edit"></i></a>
+              <form id="del-stu-{{ s.id }}" method="POST" action="{{ url_for('admin_delete_student', sid=s.id) }}" style="display: inline;">
+                <button type="button" class="nav-tool logout" onclick="confirmDelete('del-stu-{{ s.id }}','Remove {{ s.name }} from system?')" title="Delete Student"><i class="fas fa-trash-alt"></i></button>
+              </form>
+            </div>
+          </td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="6" style="text-align: center; padding: 5rem 2rem;">
+            <div style="width: 80px; height: 80px; background: var(--bg); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem;">
+              <i class="fas fa-user-slash" style="font-size: 2rem; color: var(--muted); opacity: 0.5;"></i>
+            </div>
+            <h3 style="font-weight: 700; color: var(--text);">No students found</h3>
+            <p style="color: var(--muted); margin-bottom: 2rem;">Try adjusting your filters or register a new student.</p>
+            <a href="{{ url_for('admin_add_student') }}" class="btn btn-primary">Add First Student</a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+searchTable('stuSearch','studentsTable');
+function filterByClass(){
+  const cf=document.getElementById('classFilter').value.toLowerCase();
+  const sf=document.getElementById('statusFilter').value.toLowerCase();
+  document.querySelectorAll('#studentsTable tbody tr').forEach(r=>{
+    const cVal = r.dataset.class.toLowerCase();
+    const sVal = r.dataset.status.toLowerCase();
+    const mc = !cf || cVal === cf;
+    const ms = !sf || sVal === sf;
+    r.style.display = (mc && ms) ? '' : 'none';
+  });
+}
+</script>
+{% endblock %}

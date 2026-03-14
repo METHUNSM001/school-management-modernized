@@ -1,0 +1,120 @@
+{% extends "dashboard_base.html" %}
+{% block title %}Admission Applications - MONTFORT SCHOOL{% endblock %}
+{% block extra_css %}
+<style>
+.management-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 2rem;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+}
+.app-id-badge {
+    background: var(--bg);
+    color: var(--primary);
+    padding: 4px 10px;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 0.75rem;
+    border: 1px solid var(--border);
+}
+.status-pill {
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+.status-pending { background: #fef3c7; color: #92400e; }
+.status-approved { background: #d1fae5; color: #065f46; }
+.status-rejected { background: #fee2e2; color: #991b1b; }
+
+.row-status-form {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+.status-select {
+    height: 36px;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    padding: 0 10px;
+}
+</style>
+{% endblock %}
+{% block content %}
+<div class="management-header">
+  <div>
+    <h1 style="font-size: 1.75rem; font-weight: 800; color: var(--text); letter-spacing: -0.5px;">Pending Admissions</h1>
+    <p style="color: var(--muted); font-size: 0.9rem; font-weight: 500;">Review and process new student enrollment applications.</p>
+  </div>
+</div>
+
+<div class="card" style="border-radius: 20px; border: none; box-shadow: var(--shadow-md);">
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th style="padding-left: 24px;">ID</th>
+          <th>Applicant Details</th>
+          <th>Class</th>
+          <th>Guardian</th>
+          <th>Contact</th>
+          <th>Submission</th>
+          <th>Status</th>
+          <th style="padding-right: 24px; text-align: right;">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for a in applications | reverse %}
+        <tr>
+          <td style="padding-left: 24px;">
+            <div class="app-id-badge">ADM{{ '%04d'|format(a.id|int) }}</div>
+          </td>
+          <td>
+            <div style="font-weight: 700; color: var(--text);">{{ a.applicant_name }}</div>
+            <div style="font-size: 0.75rem; color: var(--muted); font-weight: 600;">DOB: {{ a.dob }}</div>
+          </td>
+          <td>
+            <div style="font-weight: 600; color: var(--primary);">{{ a.class_applying }}</div>
+          </td>
+          <td>
+            <div style="font-weight: 600; color: var(--text);">{{ a.parent_name }}</div>
+          </td>
+          <td>
+            <div style="font-size: 0.85rem; color: var(--muted); font-weight: 600;">{{ a.parent_phone }}</div>
+          </td>
+          <td>
+            <div style="font-size: 0.85rem; color: var(--muted);">{{ a.applied_date }}</div>
+          </td>
+          <td>
+            <span class="status-pill status-{{ a.status }}">{{ a.status | title }}</span>
+          </td>
+          <td style="padding-right: 24px; text-align: right;">
+            <form method="POST" action="{{ url_for('admin_update_admission', aid=a.id) }}" class="row-status-form">
+              <select name="status" class="form-control status-select" style="appearance: auto;">
+                <option value="pending" {{ 'selected' if a.status=='pending' }}>Pending</option>
+                <option value="approved" {{ 'selected' if a.status=='approved' }}>Approve</option>
+                <option value="rejected" {{ 'selected' if a.status=='rejected' }}>Reject</option>
+              </select>
+              <button type="submit" class="nav-tool" title="Update Status" style="background: var(--primary-glow); color: var(--primary);"><i class="fas fa-check"></i></button>
+            </form>
+          </td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="8" style="text-align: center; padding: 5rem 2rem;">
+            <i class="fas fa-user-plus" style="font-size: 3rem; color: var(--muted); opacity: 0.2; display: block; margin-bottom: 1.5rem;"></i>
+            <h3 style="font-weight: 700; color: var(--text);">No applications found</h3>
+            <p style="color: var(--muted);">All enrollment applications will appear here for review.</p>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

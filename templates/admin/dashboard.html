@@ -1,0 +1,209 @@
+{% extends "dashboard_base.html" %}
+{% block title %}Admin Dashboard - MONTFORT SCHOOL{% endblock %}
+{% block extra_css %}
+<style>
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+}
+@media (max-width: 991px) {
+    .dashboard-grid {
+        grid-template-columns: 1fr;
+    }
+}
+.action-card {
+    transition: all 0.3s;
+    border: 1px solid var(--border);
+}
+.action-card:hover {
+    border-color: var(--primary);
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-md);
+}
+</style>
+{% endblock %}
+{% block content %}
+<div style="margin-bottom: 2rem;">
+  <h1 style="font-size: 1.75rem; font-weight: 800; color: var(--text); letter-spacing: -0.5px;">Dashboard Overview</h1>
+  <p style="color: var(--muted); font-size: 0.9rem; font-weight: 500;">Welcome back, {{ session.name }}. Here's what's happening today.</p>
+</div>
+
+<!-- STATS -->
+<div class="stats-grid">
+  <div class="stat-card">
+    <div class="stat-icon" style="background: #eff6ff; color: #1e40af;"><i class="fas fa-user-graduate"></i></div>
+    <div class="stat-info"><h4>{{ stats.students }}</h4><p>Students</p></div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon" style="background: #fdf2f8; color: #9d174d;"><i class="fas fa-chalkboard-teacher"></i></div>
+    <div class="stat-info"><h4>{{ stats.teachers }}</h4><p>Teachers</p></div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon" style="background: #ecfdf5; color: #065f46;"><i class="fas fa-school"></i></div>
+    <div class="stat-info"><h4>{{ stats.classes }}</h4><p>Classes</p></div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon" style="background: #fffbeb; color: #92400e;"><i class="fas fa-book-open"></i></div>
+    <div class="stat-info"><h4>{{ stats.library_books }}</h4><p>Books</p></div>
+  </div>
+</div>
+
+<div class="dashboard-grid">
+  <!-- ATTENDANCE CHART -->
+  <div class="card">
+    <div class="card-header">
+      <h3 style="display:flex; align-items:center; gap:10px;"><i class="fas fa-chart-line" style="color: var(--primary);"></i> Attendance Analysis</h3>
+    </div>
+    <div class="card-body">
+      <canvas id="attChart" height="240"></canvas>
+    </div>
+  </div>
+
+  <!-- FEES CHART -->
+  <div class="card">
+    <div class="card-header">
+       <h3 style="display:flex; align-items:center; gap:10px;"><i class="fas fa-chart-pie" style="color: var(--secondary);"></i> Fee Status</h3>
+    </div>
+    <div class="card-body" style="display: flex; align-items: center; justify-content: center;">
+      <div style="width: 100%; max-width: 300px;">
+        <canvas id="feeChart"></canvas>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="dashboard-grid" style="margin-top: 1.5rem;">
+  <!-- RECENT STUDENTS -->
+  <div class="card">
+    <div class="card-header">
+      <h3>Recent Registrations</h3>
+      <a href="{{ url_for('admin_students') }}" class="btn btn-outline btn-sm">View All</a>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Student</th><th>Class</th><th>Status</th></tr></thead>
+        <tbody>
+          {% for s in recent_students %}
+          <tr>
+            <td>
+              <div style="font-weight: 600;">{{ s.name }}</div>
+              <div style="font-size: 0.75rem; color: var(--muted);">Roll: {{ s.roll_no }}</div>
+            </td>
+            <td>{{ s.class_info.name if s.class_info else 'N/A' }}</td>
+            <td><span class="badge badge-{{ 'success' if s.status=='active' else 'danger' }}">{{ s.status | title }}</span></td>
+          </tr>
+          {% else %}
+          <tr><td colspan="3" style="text-align:center; padding: 2rem; color: var(--muted);">No recent students</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ANNOUNCEMENTS -->
+  <div class="card">
+    <div class="card-header">
+      <h3>Announcements</h3>
+      <a href="{{ url_for('admin_announcements') }}" class="btn btn-outline btn-sm">Manage</a>
+    </div>
+    <div class="card-body" style="padding: 0;">
+      {% for a in announcements[:5] | reverse %}
+      <div style="padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--border);">
+        <h4 style="font-size: 0.95rem; font-weight: 700; color: var(--primary); margin-bottom: 4px;">{{ a.title }}</h4>
+        <p style="font-size: 0.85rem; color: var(--muted); line-height: 1.5;">{{ a.content[:80] }}...</p>
+        <div style="margin-top: 8px; font-size: 0.75rem; color: var(--muted); font-weight: 600;">
+          <i class="far fa-clock"></i> {{ a.created_at[:10] }}
+        </div>
+      </div>
+      {% else %}
+      <div style="padding: 3rem; text-align: center; color: var(--muted);">
+        <i class="fas fa-bullhorn" style="font-size: 2rem; opacity: 0.2; display: block; margin-bottom: 1rem;"></i>
+        No announcements found
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+<!-- QUICK ACTIONS -->
+<div class="card" style="margin-top: 1.5rem;">
+  <div class="card-header"><h3>System Actions</h3></div>
+  <div class="card-body">
+    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 1rem;">
+      <a href="{{ url_for('admin_add_student') }}" class="btn btn-outline action-card" style="flex-direction: column; padding: 1.5rem; gap: 12px; height: auto;">
+        <i class="fas fa-user-plus" style="font-size: 1.25rem; color: var(--primary);"></i>
+        <span>Add Student</span>
+      </a>
+      <a href="{{ url_for('admin_add_teacher') }}" class="btn btn-outline action-card" style="flex-direction: column; padding: 1.5rem; gap: 12px; height: auto;">
+        <i class="fas fa-chalkboard-teacher" style="font-size: 1.25rem; color: var(--secondary);"></i>
+        <span>Add Teacher</span>
+      </a>
+      <a href="{{ url_for('admin_attendance') }}" class="btn btn-outline action-card" style="flex-direction: column; padding: 1.5rem; gap: 12px; height: auto;">
+        <i class="fas fa-clipboard-check" style="font-size: 1.25rem; color: var(--success);"></i>
+        <span>Attendance</span>
+      </a>
+      <a href="{{ url_for('admin_fees') }}" class="btn btn-outline action-card" style="flex-direction: column; padding: 1.5rem; gap: 12px; height: auto;">
+        <i class="fas fa-rupee-sign" style="font-size: 1.25rem; color: var(--warning);"></i>
+        <span>Manage Fees</span>
+      </a>
+      <a href="{{ url_for('admin_exams') }}" class="btn btn-outline action-card" style="flex-direction: column; padding: 1.5rem; gap: 12px; height: auto;">
+        <i class="fas fa-file-invoice" style="font-size: 1.25rem; color: var(--primary);"></i>
+        <span>Exams</span>
+      </a>
+      <a href="{{ url_for('admin_announcements') }}" class="btn btn-outline action-card" style="flex-direction: column; padding: 1.5rem; gap: 12px; height: auto;">
+        <i class="fas fa-bullhorn" style="font-size: 1.25rem; color: var(--accent);"></i>
+        <span>Broadcast</span>
+      </a>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+fetch('/api/attendance_chart')
+  .then(r=>r.json()).then(d=>{
+    const ctx = document.getElementById('attChart').getContext('2d');
+    new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: d.labels,
+        datasets: [{
+          label: 'Attendance',
+          data: d.data,
+          borderColor: '#1e3a8a',
+          backgroundColor: 'rgba(30, 58, 138, 0.1)',
+          fill: true,
+          tension: 0.4,
+          pointRadius: 4,
+          pointBackgroundColor: '#1e3a8a'
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: { 
+            y: { beginAtZero: true, grid: { borderDash: [5, 5] } },
+            x: { grid: { display: false } }
+        }
+      }
+    });
+  });
+
+fetch('/api/stats').then(r=>r.json()).then(d=>{
+  new Chart(document.getElementById('feeChart'),{
+    type:'doughnut',
+    data:{
+      labels:['Paid','Pending'],
+      datasets:[{data:[d.fees_paid,d.fees_pending],backgroundColor:['#10b981','#ef4444'],borderWidth:0}]
+    },
+    options:{
+        responsive:true,
+        plugins:{legend:{position:'bottom', labels: { usePointStyle: true, padding: 20 }}},
+        cutout:'75%'
+    }
+  });
+});
+</script>
+{% endblock %}

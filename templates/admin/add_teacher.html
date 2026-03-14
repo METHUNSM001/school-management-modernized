@@ -1,0 +1,83 @@
+{% extends "dashboard_base.html" %}
+{% block title %}{{ 'Edit' if edit else 'Add' }} Teacher - Admin{% endblock %}
+{% block extra_css %}
+<style>
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+}
+@media (max-width: 991px) {
+    .form-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+@media (max-width: 600px) {
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+}
+.form-section-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--primary);
+    margin: 2.5rem 0 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+.form-section-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+}
+</style>
+{% endblock %}
+{% block content %}
+<div class="page-header" style="margin-bottom: 2rem;">
+  <div>
+    <h1 style="font-size: 1.75rem; font-weight: 800; color: var(--text); letter-spacing: -0.5px;">{{ 'Edit' if edit else 'Register' }} Teacher</h1>
+    <p style="color: var(--muted); font-size: 0.9rem; font-weight: 500;">Create or update teacher profiles and account access.</p>
+  </div>
+  <a href="{{ url_for('admin_teachers') }}" class="btn btn-outline"><i class="fas fa-arrow-left"></i> Back to List</a>
+</div>
+
+<div class="card" style="border-radius: 24px;">
+  <div class="card-body" style="padding: 2.5rem;">
+    <form method="POST">
+      <div class="form-section-title" style="margin-top: 0;"><i class="fas fa-user-tie"></i> Professional Profile</div>
+      <div class="form-grid">
+        <div class="form-group"><label class="form-label">Full Name *</label><input type="text" name="name" class="form-control" value="{{ teacher.name if teacher else '' }}" required placeholder="e.g. Sarah Connor"></div>
+        <div class="form-group"><label class="form-label">Employee ID *</label><input type="text" name="employee_id" class="form-control" value="{{ teacher.employee_id if teacher else '' }}" required placeholder="TCH001"></div>
+        <div class="form-group"><label class="form-label">Primary Subject *</label><input type="text" name="subject" class="form-control" value="{{ teacher.subject if teacher else '' }}" required placeholder="e.g. Mathematics"></div>
+        <div class="form-group"><label class="form-label">Qualifications</label><input type="text" name="qualification" class="form-control" value="{{ teacher.qualification if teacher else '' }}" placeholder="e.g. M.Sc, B.Ed"></div>
+        <div class="form-group"><label class="form-label">Joining Date</label><input type="date" name="joining_date" class="form-control" value="{{ teacher.joining_date if teacher else '' }}"></div>
+        <div class="form-group"><label class="form-label">Monthly Salary (₹)</label><input type="number" name="salary" class="form-control" value="{{ teacher.salary if teacher else '' }}" placeholder="Enter amount"></div>
+      </div>
+
+      <div class="form-section-title"><i class="fas fa-address-book"></i> Contact Details</div>
+      <div class="form-grid">
+        <div class="form-group"><label class="form-label">Phone Number *</label><input type="tel" name="phone" class="form-control" value="{{ teacher.phone if teacher else '' }}" required placeholder="+91 XXXXXXXXXX"></div>
+        <div class="form-group"><label class="form-label">Email Address *</label><input type="email" name="email" class="form-control" value="{{ teacher.email if teacher else '' }}" required placeholder="teacher@school.com"></div>
+        <div class="form-group" style="grid-column: 1 / -1;"><label class="form-label">Residential Address</label><textarea name="address" class="form-control" rows="2" placeholder="Complete address">{{ teacher.address if teacher else '' }}</textarea></div>
+      </div>
+
+      <div class="form-section-title"><i class="fas fa-shield-halved"></i> Security & Access</div>
+      <div class="form-grid">
+        {% if not edit %}
+        <div class="form-group"><label class="form-label">Login Username *</label><input type="text" name="username" class="form-control" required placeholder="Desired username"></div>
+        <div class="form-group"><label class="form-label">Initial Password</label><input type="password" name="password" class="form-control" placeholder="Default: teacher123"></div>
+        {% else %}
+        <div class="form-group" style="grid-column: 1 / -1; color: var(--muted); font-size: 0.85rem;">Account credentials can be managed via the teacher's profile.</div>
+        {% endif %}
+      </div>
+
+      <div style="display:flex; gap: 1rem; margin-top: 3rem; padding-top: 2rem; border-top: 1px solid var(--border);">
+        <button type="submit" class="btn btn-primary btn-lg" style="padding: 12px 36px;"><i class="fas fa-check-circle"></i> {{ 'Save Changes' if edit else 'Create Teacher Account' }}</button>
+        <a href="{{ url_for('admin_teachers') }}" class="btn btn-outline btn-lg" style="padding: 12px 36px;">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

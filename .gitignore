@@ -1,0 +1,39 @@
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+ENV/
+bin/
+lib/
+include/
+.venv/
+.env
+.flaskenv
+
+# Database
+instance/
+*.db
+*.sqlite
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Project specific
+.gemini/
+.agent/
+.agents/
+tmp/
+node_modules/
+dist/
+.localtunnel/
+brain/
+*.webp
+*.png
+*.png
+*.jpg
+!static/uploads/*.jpg
+!static/uploads/*.png

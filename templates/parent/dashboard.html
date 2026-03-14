@@ -1,0 +1,159 @@
+{% extends "dashboard_base.html" %}
+{% block title %}Family Portal - MONTFORT SCHOOL{% endblock %}
+{% block extra_css %}
+<style>
+.parent-welcome-banner {
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+    border-radius: 32px;
+    padding: 3rem;
+    color: #fff;
+    margin-bottom: 2.5rem;
+    position: relative;
+    overflow: hidden;
+}
+.parent-welcome-banner::after {
+    content: '';
+    position: absolute;
+    top: -40px;
+    right: -40px;
+    width: 200px;
+    height: 200px;
+    background: var(--primary);
+    opacity: 0.15;
+    filter: blur(60px);
+    border-radius: 50%;
+}
+.parent-welcome-banner h1 { font-size: 2rem; font-weight: 800; margin-bottom: 0.5rem; }
+.parent-welcome-banner p { opacity: 0.8; font-weight: 500; font-size: 1.05rem; }
+
+.children-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 2rem;
+    margin-bottom: 3rem;
+}
+.child-card {
+    background: #fff;
+    border-radius: 28px;
+    padding: 2rem;
+    border: 1px solid var(--border);
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+.child-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-lg);
+    border-color: var(--primary-light);
+}
+.child-profile {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+}
+.child-avatar {
+    width: 64px;
+    height: 64px;
+    border-radius: 20px;
+    background: var(--bg);
+    color: var(--primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.75rem;
+    font-weight: 800;
+    border: 1px solid var(--border);
+}
+.child-identity h3 { font-size: 1.15rem; font-weight: 800; color: var(--text); margin: 0; }
+.child-identity p { font-size: 0.85rem; color: var(--muted); font-weight: 600; margin-top: 2px; }
+
+.child-stats-mini {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    background: var(--bg);
+    padding: 1.25rem;
+    border-radius: 20px;
+}
+.stat-mini-item { display: flex; flex-direction: column; gap: 4px; }
+.stat-mini-label { font-size: 0.75rem; color: var(--muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+.stat-mini-val { font-size: 0.95rem; font-weight: 800; color: var(--text); }
+
+@media (max-width: 768px) {
+    .parent-welcome-banner { padding: 2rem; text-align: center; }
+}
+</style>
+{% endblock %}
+{% block content %}
+<div class="parent-welcome-banner">
+  <h1>Welcome, {{ session.name }}</h1>
+  <p>Stay connected with your child's educational journey and campus updates.</p>
+</div>
+
+{% if children %}
+<div style="margin-bottom: 2rem; display: flex; align-items: center; gap: 12px;">
+    <h2 style="font-size: 1.25rem; font-weight: 800; color: var(--text);">My Children</h2>
+    <div style="height: 2px; flex: 1; background: var(--border);"></div>
+</div>
+
+<div class="children-grid">
+  {% for child in children %}
+  <div class="child-card">
+    <div class="child-profile">
+      <div class="child-avatar">{{ child.name[0] | upper }}</div>
+      <div class="child-identity">
+        <h3>{{ child.name }}</h3>
+        <p>Roll No: {{ child.roll_no }}</p>
+      </div>
+    </div>
+    
+    <div class="child-stats-mini">
+        <div class="stat-mini-item">
+            <span class="stat-mini-label"><i class="fas fa-school"></i> Grade</span>
+            <span class="stat-mini-val">{{ child.section }}</span>
+        </div>
+        <div class="stat-mini-item">
+            <span class="stat-mini-label"><i class="fas fa-user-check"></i> Status</span>
+            <span class="status-badge {{ 'status-active' if child.status=='active' else 'status-inactive' }}" style="padding: 2px 10px; font-size: 0.7rem;">{{ child.status | upper }}</span>
+        </div>
+    </div>
+
+    <a href="{{ url_for('parent_student', sid=child.id) }}" class="btn btn-primary" style="justify-content: center; padding: 0.85rem; border-radius: 16px;">
+        View Performance <i class="fas fa-chevron-right" style="margin-left: 8px; font-size: 0.8rem;"></i>
+    </a>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<div class="section-card" style="text-align: center; padding: 4rem 2rem;">
+    <div style="width: 80px; height: 80px; background: var(--bg); border: 1px solid var(--border); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem;">
+        <i class="fas fa-user-friends" style="font-size: 2rem; color: var(--muted); opacity: 0.4;"></i>
+    </div>
+    <h3 style="font-weight: 800; color: var(--text);">No accounts linked</h3>
+    <p style="color: var(--muted); max-width: 400px; margin: 0 auto 1.5rem;">We couldn't find any student profiles linked to your parent account.</p>
+    <p style="font-size: 0.85rem; font-weight: 600; color: var(--primary);">Contact office at +91 9566662533 for assistance.</p>
+</div>
+{% endif %}
+
+<div class="section-card" style="padding: 2.5rem; background: #fff; border-radius: 32px; border: 1px solid var(--border);">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+        <h3 style="font-size: 1.35rem; font-weight: 800; color: var(--text); display: flex; align-items: center; gap: 12px;">
+            <i class="fas fa-bullhorn" style="color: var(--secondary);"></i> Campus Bulletins
+        </h3>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+      {% for a in announcements | reverse %}
+      <div style="padding: 1.75rem; border-radius: 24px; background: #f8fafc; border: 1px solid var(--border); position: relative; overflow: hidden; transition: all 0.3s ease;">
+        <h4 style="font-size: 1.1rem; font-weight: 800; color: var(--primary); margin-bottom: 0.75rem;">{{ a.title }}</h4>
+        <p style="font-size: 0.95rem; color: var(--muted); line-height: 1.6;">{{ a.content }}</p>
+        <div style="margin-top: 1.25rem; display: flex; align-items: center; gap: 8px; font-size: 0.8rem; font-weight: 700; color: var(--muted); opacity: 0.7;">
+            <i class="far fa-clock"></i> {{ a.created_at[:10] if a.created_at else '' }}
+        </div>
+      </div>
+      {% else %}
+      <div style="text-align: center; padding: 2rem; color: var(--muted);">No new announcements available.</div>
+      {% endfor %}
+    </div>
+</div>
+{% endblock %}

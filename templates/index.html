@@ -1,0 +1,260 @@
+{% extends "base.html" %}
+{% block extra_css %}
+<style>
+.hero-slider {
+  position: relative;
+  overflow: hidden;
+  height: 85vh;
+  min-height: 600px;
+}
+.hero-slides-wrapper {
+  display: flex;
+  width: 300%;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  transition: transform 1.2s cubic-bezier(0.65, 0, 0.35, 1);
+}
+.hero-slide {
+  width: 33.333%;
+  height: 100%;
+  background-size: cover;
+  background-position: center;
+}
+.hero-content-container {
+    position: relative; 
+    z-index: 10; 
+    height: 100%; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    text-align: center; 
+    color: #fff;
+}
+.stats-floating-wrapper {
+    position: absolute; 
+    bottom: -60px; 
+    left: 50%; 
+    transform: translateX(-50%); 
+    z-index: 20; 
+    width: 100%; 
+    max-width: 1100px; 
+    padding: 0 1.5rem;
+}
+.stats-glass-card {
+    background: rgba(255, 255, 255, 0.95); 
+    backdrop-filter: blur(10px); 
+    border-radius: 30px; 
+    padding: 2.5rem; 
+    display: grid; 
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); 
+    gap: 2rem; 
+    box-shadow: 0 20px 50px rgba(0,0,0,0.15); 
+    border: 1px solid rgba(255,255,255,0.2);
+}
+
+@media (max-width: 991px) {
+    .hero-slider {
+        height: auto;
+        min-height: 500px;
+        display: flex;
+        flex-direction: column;
+    }
+    .hero-content-container {
+        padding: 100px 0 80px;
+    }
+    .stats-floating-wrapper {
+        position: relative;
+        bottom: 0;
+        left: 0;
+        transform: none;
+        margin-top: -50px;
+        margin-bottom: 20px;
+    }
+    .stats-glass-card {
+        padding: 2rem;
+        gap: 1.5rem;
+        border-radius: 20px;
+    }
+}
+
+@media (max-width: 576px) {
+    .stats-glass-card {
+        grid-template-columns: 1fr 1fr;
+        padding: 1.5rem;
+    }
+    .stats-glass-card div div:first-child {
+        font-size: 2rem !important;
+    }
+    .stats-glass-card div div:last-child {
+        font-size: 0.75rem !important;
+    }
+}
+
+@keyframes fadeInDown {
+    from { opacity: 0; transform: translateY(-30px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+</style>
+{% endblock %}
+{% block title %}MONTFORT SENIOR SECONDARY SCHOOL{% endblock %}
+{% block content %}
+<!-- HERO SLIDER -->
+<section class="hero-slider">
+  <div class="hero-slides-wrapper" id="heroWrapper">
+    <div class="hero-slide" style="background-image: linear-gradient(rgba(15, 23, 42, 0.6), rgba(15, 23, 42, 0.3)), url('{{ url_for('static', filename='uploads/AC-1.jpg') }}');"></div>
+    <div class="hero-slide" style="background-image: linear-gradient(rgba(15, 23, 42, 0.6), rgba(15, 23, 42, 0.3)), url('{{ url_for('static', filename='uploads/AC-2.jpg') }}');"></div>
+    <div class="hero-slide" style="background-image: linear-gradient(rgba(15, 23, 42, 0.6), rgba(15, 23, 42, 0.3)), url('{{ url_for('static', filename='uploads/AC-3.jpg') }}');"></div>
+  </div>
+  
+  <div class="container hero-content-container">
+    <div style="max-width: 900px; padding: 0 1rem; animation: fadeInDown 0.8s ease-out;">
+        <h1 style="font-size: clamp(2rem, 5vw, 3.5rem); font-weight: 800; line-height: 1.1; margin-bottom: 1.5rem; text-shadow: var(--shadow-xl);">
+            Nurturing Excellence, <br><span style="color: var(--accent);">Empowering Futures</span>
+        </h1>
+        <p style="font-size: clamp(1rem, 2vw, 1.25rem); opacity: 0.9; margin-bottom: 2.5rem; max-width: 700px; margin-left: auto; margin-right: auto; font-weight: 400;">
+            MONTFORT SENIOR SECONDARY SCHOOL - Where education meets holistic development.
+        </p>
+        <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+            <a href="{{ url_for('admissions') }}" class="btn btn-primary btn-lg">Admission 2024-25</a>
+            <a href="{{ url_for('about') }}" class="btn btn-lg" style="background: rgba(255,255,255,0.1); backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,0.3); color: #fff;">Learn More</a>
+        </div>
+    </div>
+  </div>
+
+  <!-- FLOATING STATS -->
+  <div class="stats-floating-wrapper">
+      <div class="stats-glass-card">
+          <div style="text-align: center;">
+              <div style="color: var(--primary); font-size: 2.75rem; font-weight: 800; line-height: 1;">663+</div>
+              <div style="color: var(--muted); font-size: 0.9rem; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; margin-top: 0.5rem;">Students</div>
+          </div>
+          <div style="text-align: center;">
+              <div style="color: var(--secondary); font-size: 2.75rem; font-weight: 800; line-height: 1;">44+</div>
+              <div style="color: var(--muted); font-size: 0.9rem; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; margin-top: 0.5rem;">Educators</div>
+          </div>
+          <div style="text-align: center;">
+              <div style="color: var(--accent); font-size: 2.75rem; font-weight: 800; line-height: 1;">12+</div>
+              <div style="color: var(--muted); font-size: 0.9rem; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; margin-top: 0.5rem;">Years Legacy</div>
+          </div>
+          <div style="text-align: center;">
+              <div style="color: var(--success); font-size: 2.75rem; font-weight: 800; line-height: 1;">100%</div>
+              <div style="color: var(--muted); font-size: 0.9rem; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; margin-top: 0.5rem;">Success Rate</div>
+          </div>
+      </div>
+  </div>
+</section>
+
+<!-- WHY MONTFORT -->
+<section style="padding: 120px 0 80px;">
+    <div class="container" style="max-width: 1200px; padding: 0 1.5rem;">
+        <div style="text-align: center; margin-bottom: 4rem; display: flex; flex-direction: column; align-items: center;">
+            <div style="background: var(--primary-glow); color: var(--primary); padding: 8px 16px; border-radius: 100px; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; font-size: 0.75rem; margin-bottom: 1rem; display: inline-block;">
+                Why Choose Us
+            </div>
+            <h2 style="font-size: clamp(2rem, 4vw, 3rem); font-weight: 800; color: var(--text); letter-spacing: -1px; line-height: 1.2; max-width: 700px;">Empowering Every Child</h2>
+            <div style="width: 60px; height: 4px; background: var(--secondary); border-radius: 10px; margin-top: 1rem;"></div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 2rem;">
+            {% for icon, title, desc, color in [
+                ('fa-award', 'CBSE Affiliated', 'Recognized by CBSE with consistent academic excellence and ethics.', '#1e3a8a'),
+                ('fa-flask-vial', 'Cutting-edge Labs', 'State-of-the-art Science and Computer labs for practical learning.', '#db2777'),
+                ('fa-basketball', 'Sports & Arts', 'Holistic development through athletics and creative arts.', '#10b981'),
+                ('fa-book-open-reader', 'Smart Learning', 'Interactive digital classrooms for an engaging learning experience.', '#f59e0b'),
+                ('fa-bus', 'Safe Transit', 'GPS-enabled transport covering major routes with safety protocols.', '#6366f1'),
+                ('fa-shield-check', 'Secure Campus', '24/7 CCTV and security for a safe learning environment.', '#475569')
+            ] %}
+            <div class="card" style="padding: 2rem; text-align: left; display: flex; flex-direction: column; gap: 1rem;">
+                <div class="feature-icon-wrapper" style="--icon-bg: {{ color }}20; --icon-color: {{ color }}; width: 50px; height: 50px; background: var(--icon-bg); color: var(--icon-color); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.25rem;">
+                    <i class="fas {{ icon }}"></i>
+                </div>
+                <h3 style="font-size: 1.15rem; font-weight: 700; color: var(--text);">{{ title }}</h3>
+                <p style="color: var(--muted); line-height: 1.6; font-size: 0.9rem;">{{ desc }}</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- UPDATES & EVENTS -->
+<section style="background: #f8fafc; padding: 100px 0; border-top: 1px solid var(--border);">
+    <div class="container" style="max-width: 1200px; padding: 0 1.5rem;">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 3rem;">
+            <!-- Announcements -->
+            <div>
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 2.5rem;">
+                    <h2 style="font-size: 1.75rem; font-weight: 800; color: var(--text);">Notice Board</h2>
+                    <a href="#" style="font-size: 0.9rem; font-weight: 600; color: var(--primary);">View All</a>
+                </div>
+                {% if announcements %}
+                <div style="display: flex; flex-direction: column; gap: 1.25rem;">
+                    {% for a in announcements | reverse %}
+                    <div style="background: white; border: 1px solid var(--border); border-radius: 20px; padding: 1.5rem; transition: all 0.3s;" onmouseover="this.style.transform='translateY(-5px)'; this.style.borderColor='var(--primary)'" onmouseout="this.style.transform='translateY(0)'; this.style.borderColor='var(--border)'">
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.75rem;">
+                            <h4 style="font-weight: 700; color: var(--primary); font-size: 1rem;">{{ a.title }}</h4>
+                            <span style="font-size: 0.7rem; color: var(--muted); font-weight: 700; text-transform: uppercase;">{{ a.created_at[:10] }}</span>
+                        </div>
+                        <p style="color: var(--muted); font-size: 0.85rem; line-height: 1.6;">{{ a.content[:120] }}...</p>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Events -->
+            <div>
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 2.5rem;">
+                    <h2 style="font-size: 1.75rem; font-weight: 800; color: var(--text);">Upcoming Highlights</h2>
+                    <a href="{{ url_for('events') }}" style="font-size: 0.9rem; font-weight: 600; color: var(--secondary);">Full Calendar</a>
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 1.25rem;">
+                    {% for e in events | reverse %}
+                    <div style="display: flex; gap: 1.25rem; background: white; padding: 1.25rem; border-radius: 20px; border: 1px solid var(--border); transition: all 0.3s;" onmouseover="this.style.boxShadow='var(--shadow-lg)'" onmouseout="this.style.boxShadow='none'">
+                        <div style="background: var(--secondary); color: white; border-radius: 12px; width: 55px; height: 55px; display: flex; flex-direction: column; align-items: center; justify-content: center; flex-shrink: 0;">
+                            <span style="font-size: 1.15rem; font-weight: 800; line-height: 1;">{{ e.event_date.split('-')[2] if '-' in e.event_date else '15' }}</span>
+                            <span style="font-size: 0.65rem; font-weight: 700; text-transform: uppercase;">{{ e.event_date.split('-')[1] if '-' in e.event_date else 'DEC' }}</span>
+                        </div>
+                        <div>
+                            <h4 style="font-weight: 700; font-size: 1rem; margin-bottom: 4px; color: var(--text);">{{ e.title }}</h4>
+                            <p style="font-size: 0.8rem; color: var(--muted);"><i class="fas fa-location-dot" style="margin-right: 4px; color: var(--secondary);"></i> {{ e.location }}</p>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- PRINCIPAL'S QUOTE -->
+<section style="padding: 100px 0; background: white;">
+    <div class="container" style="max-width: 900px; padding: 0 1.5rem; text-align: center;">
+        <i class="fas fa-quote-left" style="font-size: 2.5rem; color: var(--primary); opacity: 0.1; margin-bottom: 2rem; display: block;"></i>
+        <h2 style="font-size: clamp(1.2rem, 3vw, 1.5rem); line-height: 1.7; font-weight: 500; font-style: italic; color: var(--text); margin-bottom: 2.5rem;">
+            "Our campus is environment-friendly where children learn in a natural atmosphere. We impart quality education that empowers our students to be global citizens of tomorrow."
+        </h2>
+        <div style="display: flex; align-items: center; justify-content: center; gap: 20px;">
+            <img src="{{ url_for('static', filename='uploads/Principal.jpeg') }}" style="width: 70px; height: 70px; border-radius: 50%; object-fit: cover; border: 4px solid #f8fafc; box-shadow: var(--shadow-md);">
+            <div style="text-align: left;">
+                <div style="font-weight: 800; color: var(--primary); font-size: 1.1rem;">REV. BRO. JAYABALAN SG</div>
+                <div style="font-size: 0.75rem; color: var(--muted); font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px;">Principal</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+{% block extra_js %}
+<script>
+  let currentSlide = 0;
+  const wrapper = document.getElementById('heroWrapper');
+  const slideCount = 3;
+  function nextSlide() {
+    currentSlide = (currentSlide + 1) % slideCount;
+    wrapper.style.transform = `translateX(-${(currentSlide * 100) / slideCount}%)`;
+  }
+  setInterval(nextSlide, 6000);
+</script>
+{% endblock %}
+{% endblock %}

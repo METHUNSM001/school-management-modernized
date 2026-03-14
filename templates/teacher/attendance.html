@@ -1,0 +1,52 @@
+{% extends "dashboard_base.html" %}
+{% block title %}Mark Attendance - Teacher{% endblock %}
+{% block content %}
+<div class="page-header"><h1><i class="fas fa-clipboard-check"></i> Mark Attendance</h1></div>
+<div class="card" style="margin-bottom:1rem;"><div class="card-body" style="padding:1rem;">
+  <form method="GET" style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;">
+    <div class="form-group" style="margin:0;"><label class="form-label">Class</label>
+      <select name="class_id" class="form-control" style="width:200px;">
+        <option value="">Select Class</option>
+        {% for c in classes %}<option value="{{ c.id }}" {{ 'selected' if c.id|string==selected_class }}>{{ c.name }} - {{ c.section }}</option>{% endfor %}
+      </select>
+    </div>
+    <div class="form-group" style="margin:0;"><label class="form-label">Date</label><input type="date" name="date" class="form-control" value="{{ selected_date }}" style="width:180px;"></div>
+    <button type="submit" class="btn btn-primary"><i class="fas fa-search"></i> Load</button>
+  </form>
+</div></div>
+{% if students %}
+<form method="POST">
+  <input type="hidden" name="class_id" value="{{ selected_class }}">
+  <input type="hidden" name="date" value="{{ selected_date }}">
+  <div class="card">
+    <div class="card-header"><h3><i class="fas fa-users"></i> Attendance — {{ selected_date }}</h3>
+      <div style="display:flex;gap:8px;">
+        <button type="button" class="btn btn-sm btn-success" onclick="markAll('present')"><i class="fas fa-check-double"></i> All Present</button>
+        <button type="button" class="btn btn-sm btn-danger" onclick="markAll('absent')"><i class="fas fa-times"></i> All Absent</button>
+      </div>
+    </div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>#</th><th>Name</th><th>Roll No</th><th>Present</th><th>Absent</th><th>Late</th></tr></thead>
+      <tbody>
+        {% for s in students %}
+        {% set cur = attendance_map.get(s.id|string,'present') %}
+        <tr>
+          <td>{{ loop.index }}</td><td>{{ s.name }}</td><td>{{ s.roll_no }}</td>
+          <input type="hidden" name="student_ids" value="{{ s.id }}">
+          <td><label style="cursor:pointer;"><input type="radio" name="statuses" value="present" {{ 'checked' if cur=='present' else '' }}> Present</label></td>
+          <td><label style="cursor:pointer;"><input type="radio" name="statuses" value="absent" {{ 'checked' if cur=='absent' else '' }}> Absent</label></td>
+          <td><label style="cursor:pointer;"><input type="radio" name="statuses" value="late" {{ 'checked' if cur=='late' else '' }}> Late</label></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table></div>
+    <div style="padding:1rem 1.5rem;"><button type="submit" class="btn btn-primary btn-lg"><i class="fas fa-save"></i> Save Attendance</button></div>
+  </div>
+</form>
+{% elif selected_class %}
+<div class="card"><div class="card-body" style="text-align:center;padding:3rem;color:#999;">No students in this class.</div></div>
+{% else %}
+<div class="card"><div class="card-body" style="text-align:center;padding:3rem;color:#999;"><i class="fas fa-arrow-up fa-2x" style="display:block;margin-bottom:1rem;"></i>Select a class and date above.</div></div>
+{% endif %}
+{% endblock %}
+{% block extra_js %}<script>function markAll(s){document.querySelectorAll(`input[type=radio][value="${s}"]`).forEach(r=>r.checked=true);}</script>{% endblock %}

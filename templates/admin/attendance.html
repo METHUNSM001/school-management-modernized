@@ -1,0 +1,182 @@
+{% extends "dashboard_base.html" %}
+{% block title %}Manage Attendance - MONTFORT SCHOOL{% endblock %}
+{% block extra_css %}
+<style>
+.attendance-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 2rem;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+}
+.filter-card {
+    background: #fff;
+    border-radius: 20px;
+    padding: 1.25rem;
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-sm);
+    margin-bottom: 2rem;
+}
+.attendance-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
+}
+.attendance-card {
+    background: #fff;
+    border-radius: 20px;
+    padding: 1.5rem;
+    border: 1px solid var(--border);
+    transition: all 0.3s;
+}
+.attendance-card:hover {
+    box-shadow: var(--shadow-md);
+}
+.status-group {
+    display: flex;
+    background: var(--bg);
+    padding: 4px;
+    border-radius: 12px;
+    gap: 4px;
+}
+.status-btn {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 10px;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    user-select: none;
+    border: 1px solid transparent;
+}
+.status-btn input { display: none; }
+
+.status-btn.present { color: var(--muted); }
+.status-btn.present:has(input:checked) { background: #d1fae5; color: #065f46; border-color: #34d399; }
+
+.status-btn.absent { color: var(--muted); }
+.status-btn.absent:has(input:checked) { background: #fee2e2; color: #991b1b; border-color: #f87171; }
+
+.status-btn.late { color: var(--muted); }
+.status-btn.late:has(input:checked) { background: #fef3c7; color: #92400e; border-color: #fbbf24; }
+</style>
+{% endblock %}
+{% block content %}
+<div class="attendance-header">
+  <div>
+    <h1 style="font-size: 1.75rem; font-weight: 800; color: var(--text); letter-spacing: -0.5px;">Attendance Tracker</h1>
+    <p style="color: var(--muted); font-size: 0.9rem; font-weight: 500;">Record and manage daily student attendance efficiently.</p>
+  </div>
+</div>
+
+<!-- FILTERS -->
+<div class="filter-card">
+  <form method="GET" style="display: flex; gap: 1.5rem; flex-wrap: wrap; align-items: flex-end;">
+    <div style="flex: 1; min-width: 200px;">
+      <label class="form-label" style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px;">Select Class</label>
+      <select name="class_id" class="form-control" required style="height: 48px; border-radius: 12px; appearance: auto;">
+        <option value="">Choose Class...</option>
+        {% for c in classes %}
+        <option value="{{ c.id }}" {{ 'selected' if c.id|string==selected_class }}>{{ c.name }} - {{ c.section }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div style="flex: 1; min-width: 200px;">
+      <label class="form-label" style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px;">Attendance Date</label>
+      <input type="date" name="date" class="form-control" value="{{ selected_date }}" required style="height: 48px; border-radius: 12px;">
+    </div>
+    <button type="submit" class="btn btn-primary" style="height: 48px; padding: 0 30px;">
+      <i class="fas fa-search"></i> View Attendance
+    </button>
+  </form>
+</div>
+
+{% if students %}
+<form method="POST" action="{{ url_for('admin_save_attendance') }}">
+  <input type="hidden" name="class_id" value="{{ selected_class }}">
+  <input type="hidden" name="date" value="{{ selected_date }}">
+  
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+    <h3 style="font-size: 1.1rem; font-weight: 700; color: var(--text);">
+      <i class="fas fa-users" style="color: var(--primary);"></i> Students ({{ students|length }})
+    </h3>
+    <div style="display: flex; gap: 10px;">
+        <button type="button" class="btn btn-outline" onclick="markAll('present')" style="padding: 8px 16px; font-size: 0.8rem;">Mark All Present</button>
+        <button type="button" class="btn btn-outline" style="color: var(--danger); border-color: #fca5a5; padding: 8px 16px; font-size: 0.8rem;" onclick="markAll('absent')">Mark All Absent</button>
+    </div>
+  </div>
+
+  <div class="attendance-grid">
+    {% for s in students %}
+    {% set current = attendance_map.get(s.id|string, 'present') %}
+    <div class="attendance-card">
+      <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 1.25rem;">
+        <div style="width: 40px; height: 40px; border-radius: 12px; background: var(--primary-glow); color: var(--primary); display: flex; align-items: center; justify-content: center; font-weight: 800;">
+          {{ s.name[0] | upper }}
+        </div>
+        <div>
+          <div style="font-weight: 700; color: var(--text);">{{ s.name }}</div>
+          <div style="font-size: 0.75rem; color: var(--muted); font-weight: 600;">Roll: {{ s.roll_no }}</div>
+        </div>
+      </div>
+      
+      <input type="hidden" name="student_ids" value="{{ s.id }}">
+      <div class="status-group">
+        <label class="status-btn present">
+          <input type="radio" name="statuses_{{ s.id }}" value="present" {{ 'checked' if current=='present' else '' }} onchange="updateUI(this)">
+          <i class="fas fa-check-circle"></i> Present
+        </label>
+        <label class="status-btn absent">
+          <input type="radio" name="statuses_{{ s.id }}" value="absent" {{ 'checked' if current=='absent' else '' }} onchange="updateUI(this)">
+          <i class="fas fa-times-circle"></i> Absent
+        </label>
+        <label class="status-btn late">
+          <input type="radio" name="statuses_{{ s.id }}" value="late" {{ 'checked' if current=='late' else '' }} onchange="updateUI(this)">
+          <i class="fas fa-clock"></i> Late
+        </label>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <div style="margin-top: 2rem; padding: 2rem 0; border-top: 1px solid var(--border); display: flex; justify-content: flex-end;">
+    <button type="submit" class="btn btn-primary btn-lg" style="padding: 14px 40px;">
+      <i class="fas fa-save"></i> Save Daily Attendance
+    </button>
+  </div>
+</form>
+{% elif selected_class %}
+<div class="card" style="padding: 5rem 2rem; text-align: center; border-radius: 24px;">
+  <i class="fas fa-user-slash" style="font-size: 3rem; color: var(--muted); opacity: 0.2; display: block; margin-bottom: 1.5rem;"></i>
+  <h3 style="font-weight: 700; color: var(--text);">No students registered in this class</h3>
+  <p style="color: var(--muted);">Please add students to this class before marking attendance.</p>
+</div>
+{% else %}
+<div class="card" style="padding: 5rem 2rem; text-align: center; border-radius: 24px;">
+  <i class="fas fa-calendar-check" style="font-size: 3rem; color: var(--primary); opacity: 0.2; display: block; margin-bottom: 1.5rem;"></i>
+  <h3 style="font-weight: 700; color: var(--text);">Ready to mark attendance</h3>
+  <p style="color: var(--muted);">Choose a class and a date from the filters above to begin.</p>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function markAll(status) {
+    document.querySelectorAll(`.status-btn.${status} input`).forEach(input => {
+        input.checked = true;
+        updateUI(input);
+    });
+}
+function updateUI(input) {
+    // This function is just to trigger CSS :has() re-evaluation if needed, 
+    // but modern browsers handle it automatically.
+}
+</script>
+{% endblock %}

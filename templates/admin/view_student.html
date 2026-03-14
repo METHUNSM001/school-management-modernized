@@ -1,0 +1,227 @@
+{% extends "dashboard_base.html" %}
+{% block title %}Scholar Profile - MONTFORT SCHOOL{% endblock %}
+{% block extra_css %}
+<style>
+.profile-grid {
+    display: grid;
+    grid-template-columns: 320px 1fr;
+    gap: 2rem;
+    align-items: start;
+}
+.sidebar-profile {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+.profile-main-card {
+    background: #fff;
+    border-radius: 32px;
+    padding: 2.5rem 1.5rem;
+    text-align: center;
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-md);
+}
+.profile-avatar {
+    width: 100px;
+    height: 100px;
+    border-radius: 30px;
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    margin: 0 auto 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 3rem;
+    color: #fff;
+    font-weight: 800;
+    box-shadow: 0 10px 20px rgba(30,58,138,0.2);
+}
+.profile-info-block {
+    text-align: left;
+    background: var(--bg);
+    border-radius: 20px;
+    padding: 1.5rem;
+    margin-top: 1.5rem;
+}
+.info-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+    font-size: 0.9rem;
+    color: var(--text);
+    font-weight: 600;
+}
+.info-row i {
+    width: 24px;
+    color: var(--primary);
+    opacity: 0.7;
+}
+.section-card {
+    background: #fff;
+    border-radius: 28px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-sm);
+}
+.section-card h3 {
+    font-size: 1.2rem;
+    font-weight: 800;
+    color: var(--text);
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.section-card h3 i { color: var(--secondary); }
+
+@media (max-width: 991px) {
+    .profile-grid {
+        grid-template-columns: 1fr;
+    }
+    .sidebar-profile {
+        order: -1;
+    }
+}
+</style>
+{% endblock %}
+{% block content %}
+<div class="management-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+  <div>
+    <h1 style="font-size: 1.75rem; font-weight: 800; color: var(--text); letter-spacing: -0.5px;">Scholar Profile</h1>
+  </div>
+  <div style="display:flex; gap: 10px;">
+    <a href="{{ url_for('admin_edit_student', sid=student.id) }}" class="btn btn-primary" style="background: var(--secondary); border: none;">
+        <i class="fas fa-user-edit"></i> Edit Profile
+    </a>
+    <a href="{{ url_for('admin_students') }}" class="btn btn-outline" style="border-radius: 12px;">
+        <i class="fas fa-chevron-left"></i> Directory
+    </a>
+  </div>
+</div>
+
+<div class="profile-grid">
+  <!-- Sidebar -->
+  <div class="sidebar-profile">
+    <div class="profile-main-card">
+      <div class="profile-avatar">{{ student.name[0] if student and student.name else '?' }}</div>
+      <h2 style="font-size: 1.5rem; font-weight: 800; color: var(--text); margin-bottom: 0.25rem;">{{ student.name }}</h2>
+      <p style="color: var(--primary); font-weight: 700; font-size: 0.9rem; letter-spacing: 1px;">ROLL: {{ student.roll_no }}</p>
+      
+      <div style="margin-top: 1rem;">
+          <span class="badge" style="background: {{ 'rgba(16,185,129,0.1)' if student.status=='active' else 'rgba(239,68,68,0.1)' }}; color: {{ '#059669' if student.status=='active' else '#dc2626' }}; border: 1px solid currentColor; padding: 6px 16px; font-weight: 700;">
+              {{ student.status | upper }}
+          </span>
+      </div>
+
+      <div class="profile-info-block">
+        <div class="info-row"><i class="fas fa-school"></i> <span>Grade {{ student.class_id }} {{ student.section }}</span></div>
+        <div class="info-row"><i class="fas fa-dna"></i> <span>{{ student.gender }}</span></div>
+        <div class="info-row"><i class="fas fa-calendar-day"></i> <span>{{ student.dob }}</span></div>
+        <div class="info-row"><i class="fas fa-map-marker-alt"></i> <span style="font-size: 0.8rem; opacity: 0.8;">{{ student.address }}</span></div>
+      </div>
+    </div>
+
+    <div class="section-card" style="padding: 1.5rem;">
+        <h3 style="font-size: 1rem;"><i class="fas fa-user-friends"></i> Parent/Guardian</h3>
+        <div style="display: flex; flex-direction: column; gap: 12px; font-size: 0.85rem; font-weight: 600;">
+            <div style="display: flex; justify-content: space-between;">
+                <span style="color: var(--muted);">Name</span>
+                <span>{{ student.parent_name }}</span>
+            </div>
+            <div style="display: flex; justify-content: space-between;">
+                <span style="color: var(--muted);">Phone</span>
+                <span>{{ student.parent_phone }}</span>
+            </div>
+            <div style="display: flex; justify-content: space-between;">
+                <span style="color: var(--muted);">Email</span>
+                <span style="font-size: 0.75rem;">{{ student.parent_email }}</span>
+            </div>
+        </div>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="record-details">
+    <!-- Attendance -->
+    <div class="section-card">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+          <h3><i class="fas fa-calendar-check"></i> Attendance Pulse</h3>
+          <span style="font-size: 0.8rem; font-weight: 700; color: var(--muted);">LAST 10 DAYS</span>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Date</th><th>Verification</th></tr></thead>
+          <tbody>
+            {% for a in attendance[-10:] | reverse %}
+            <tr>
+              <td style="font-weight: 700;">{{ a.date }}</td>
+              <td>
+                  <span class="status-badge {{ 'status-active' if a.status=='present' else 'status-inactive' }}" style="padding: 4px 12px; font-size: 0.75rem;">
+                      {{ a.status | upper }}
+                  </span>
+              </td>
+            </tr>
+            {% else %}
+            <tr><td colspan="2" style="text-align:center; padding: 3rem; color: var(--muted); font-style: italic;">No recent attendance logged.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Exam Results -->
+    <div class="section-card">
+      <h3><i class="fas fa-medal"></i> Academic Performance</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Assessment</th><th>Subject</th><th>Score</th><th>Grade</th></tr></thead>
+          <tbody>
+            {% for m in marks_list %}
+            {% set exam = exams_map.get(m.exam_id|string, {}) %}
+            <tr>
+              <td style="font-weight: 700;">{{ exam.name or 'Unit Test' }}</td>
+              <td style="color: var(--primary);">{{ subjects_map.get(exam.subject_id|string,'N/A') if exam else 'N/A' }}</td>
+              <td><span style="font-weight: 800;">{{ m.marks_obtained }}</span> <span style="opacity: 0.5;">/ {{ exam.max_marks or 100 }}</span></td>
+              <td>
+                  <span style="width: 32px; height: 32px; border-radius: 8px; background: var(--bg); display: flex; align-items: center; justify-content: center; font-weight: 900; color: var(--primary); border: 1px solid var(--border);">
+                      {{ m.grade }}
+                  </span>
+              </td>
+            </tr>
+            {% else %}
+            <tr><td colspan="4" style="text-align:center; padding: 3rem; color: var(--muted); font-style: italic;">Academic records pending.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Fees -->
+    <div class="section-card">
+      <h3><i class="fas fa-vault"></i> Financial Statements</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Category</th><th>Amount</th><th>Deadline</th><th>Status</th></tr></thead>
+          <tbody>
+            {% for f in fees %}
+            <tr>
+              <td style="font-weight: 700;">{{ f.fee_type }}</td>
+              <td style="color: var(--secondary); font-weight: 800;">₹{{ f.amount }}</td>
+              <td style="font-size: 0.85rem;">{{ f.due_date }}</td>
+              <td>
+                  <span class="status-badge {{ 'status-active' if f.status=='paid' else 'status-inactive' }}" style="padding: 4px 12px; font-size: 0.75rem;">
+                      {{ f.status | upper }}
+                  </span>
+              </td>
+            </tr>
+            {% else %}
+            <tr><td colspan="4" style="text-align:center; padding: 3rem; color: var(--muted); font-style: italic;">No fee notifications issued.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,211 @@
+{% extends "dashboard_base.html" %}
+{% block title %}Finances & Fees - MONTFORT SCHOOL{% endblock %}
+{% block extra_css %}
+<style>
+.management-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 2rem;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+}
+.finance-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2.5rem;
+}
+.f-stat-card {
+    background: #fff;
+    border-radius: 24px;
+    padding: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border);
+}
+.f-stat-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+}
+.f-val { font-size: 1.5rem; font-weight: 800; color: var(--text); line-height: 1.2; }
+.f-lab { font-size: 0.8rem; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; }
+
+.status-paid { background: #d1fae5; color: #065f46; }
+.status-pending { background: #fee2e2; color: #991b1b; }
+
+.receipt-no {
+    font-family: inherit;
+    font-weight: 700;
+    color: var(--secondary);
+    font-size: 0.8rem;
+    background: var(--bg);
+    padding: 2px 8px;
+    border-radius: 6px;
+}
+</style>
+{% endblock %}
+{% block content %}
+<div class="management-header">
+  <div>
+    <h1 style="font-size: 1.75rem; font-weight: 800; color: var(--text); letter-spacing: -0.5px;">Financial Management</h1>
+    <p style="color: var(--muted); font-size: 0.9rem; font-weight: 500;">Monitor fee collections, track arrears, and issue receipts.</p>
+  </div>
+  <button onclick="openModal('addFeeModal')" class="btn btn-primary" style="height: 48px; padding: 0 24px;">
+    <i class="fas fa-plus-circle"></i> Add Fee Entry
+  </button>
+</div>
+
+{% set paid = fees | selectattr('status','equalto','paid') | list %}
+{% set pending = fees | selectattr('status','equalto','pending') | list %}
+<div class="finance-stats">
+    <div class="f-stat-card">
+        <div class="f-stat-icon" style="background: #ecfdf5; color: #10b981;"><i class="fas fa-hand-holding-usd"></i></div>
+        <div>
+            <div class="f-lab">Total Collected</div>
+            <div class="f-val">₹{{ paid|sum(attribute='amount')|int }}</div>
+        </div>
+    </div>
+    <div class="f-stat-card">
+        <div class="f-stat-icon" style="background: #fef2f2; color: #ef4444;"><i class="fas fa-file-invoice-dollar"></i></div>
+        <div>
+            <div class="f-lab">Outstanding</div>
+            <div class="f-val">₹{{ pending|sum(attribute='amount')|int }}</div>
+        </div>
+    </div>
+    <div class="f-stat-card">
+        <div class="f-stat-icon" style="background: #eff6ff; color: #3b82f6;"><i class="fas fa-receipt"></i></div>
+        <div>
+            <div class="f-lab">Total Records</div>
+            <div class="f-val">{{ fees|length }}</div>
+        </div>
+    </div>
+</div>
+
+<div class="card" style="border-radius: 20px; border: none; box-shadow: var(--shadow-md);">
+  <div style="padding: 1.5rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+    <h3 style="font-size: 1.1rem; font-weight: 800; color: var(--text); margin: 0;">Transaction History</h3>
+    <div class="search-input" style="width: 300px; margin: 0;">
+      <i class="fas fa-search"></i>
+      <input type="text" id="feeSearch" placeholder="Search by student or type...">
+    </div>
+  </div>
+  <div class="table-wrap">
+    <table id="feesTable">
+      <thead>
+        <tr>
+          <th style="padding-left: 24px;">#</th>
+          <th>Student Name</th>
+          <th>Assessment Type</th>
+          <th>Value (₹)</th>
+          <th>Payment Deadline</th>
+          <th>Status</th>
+          <th>Ref No.</th>
+          <th style="padding-right: 24px; text-align: right;">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for f in fees %}
+        <tr>
+          <td style="padding-left: 24px; color: var(--muted); font-weight: 700;">{{ loop.index }}</td>
+          <td style="font-weight: 700; color: var(--text);">{{ students_map.get(f.student_id|string,'Student Not Found') }}</td>
+          <td>
+            <div style="font-weight: 600; color: var(--primary);">{{ f.fee_type }}</div>
+          </td>
+          <td>
+            <div style="font-weight: 800; color: #1e293b; font-size: 1.05rem;">₹{{ f.amount }}</div>
+          </td>
+          <td>
+            <div style="font-size: 0.85rem; color: var(--muted); font-weight: 600;">{{ f.due_date }}</div>
+          </td>
+          <td>
+            <span class="badge status-{{ f.status }}" style="text-transform: uppercase; font-size: 0.7rem; letter-spacing: 0.5px; font-weight: 800;">{{ f.status }}</span>
+          </td>
+          <td>
+            {% if f.receipt_no %}<span class="receipt-no">#{{ f.receipt_no }}</span>{% else %}<span style="color: var(--muted);">-</span>{% endif %}
+          </td>
+          <td style="padding-right: 24px; text-align: right;">
+            <div style="display: flex; gap: 8px; justify-content: flex-end; align-items: center;">
+              {% if f.status == 'pending' %}
+              <form method="POST" action="{{ url_for('admin_pay_fee', fid=f.id) }}">
+                <button type="submit" class="btn btn-sm btn-success" style="padding: 6px 14px; border-radius: 8px; font-size: 0.8rem; font-weight: 700;">
+                  <i class="fas fa-check-circle"></i> Receive
+                </button>
+              </form>
+              {% endif %}
+              <form id="del-fee-{{ f.id }}" method="POST" action="{{ url_for('admin_delete_fee', fid=f.id) }}" style="display: inline;">
+                <button type="button" class="nav-tool logout" onclick="confirmDelete('del-fee-{{ f.id }}','Permanently void this fee record?')" title="Delete Record">
+                  <i class="fas fa-trash-alt"></i>
+                </button>
+              </form>
+            </div>
+          </td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="8" style="text-align: center; padding: 5rem 2rem;">
+            <i class="fas fa-money-bill-wave" style="font-size: 3rem; color: var(--muted); opacity: 0.2; display: block; margin-bottom: 1.5rem;"></i>
+            <h3 style="font-weight: 700; color: var(--text);">No financial records found</h3>
+            <p style="color: var(--muted);">Issuing a new fee entry will start tracking payments here.</p>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="modal-overlay" id="addFeeModal" onclick="if(event.target==this) closeModal('addFeeModal')">
+  <div class="modal" style="border-radius: 24px; overflow: hidden; max-width: 600px;">
+    <div class="modal-header" style="background: var(--primary); color: #fff; padding: 1.5rem 2rem;">
+      <h3 style="color: #fff; margin: 0; font-size: 1.25rem;"><i class="fas fa-file-invoice-dollar"></i> New Fee Receipt</h3>
+      <button class="modal-close" onclick="closeModal('addFeeModal')" style="color: #fff; opacity: 0.8;">&times;</button>
+    </div>
+    <div class="modal-body" style="padding: 2.5rem 2rem;">
+      <form method="POST" action="{{ url_for('admin_add_fee') }}">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.25rem;">
+          <div class="form-group">
+            <label class="form-label">Student *</label>
+            <select name="student_id" class="form-control" required style="border-radius: 12px; height: 48px; appearance: auto;">
+              <option value="">Select Student</option>
+              {% for s in students %}<option value="{{ s.id }}">{{ s.name }} ({{ s.roll_no }})</option>{% endfor %}
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Classification *</label>
+            <select name="fee_type" class="form-control" style="border-radius: 12px; height: 48px; appearance: auto;">
+              <option>Tuition Fee</option><option>Exam Fee</option><option>Sports Fee</option><option>Library Fee</option><option>Transport Fee</option><option>Lab Fee</option>
+            </select>
+          </div>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.25rem;">
+          <div class="form-group">
+            <label class="form-label">Amount (₹) *</label>
+            <input type="number" name="amount" class="form-control" required placeholder="0.00" style="border-radius: 12px; height: 48px;">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Payment Deadline *</label>
+            <input type="date" name="due_date" class="form-control" required style="border-radius: 12px; height: 48px;">
+          </div>
+        </div>
+        <div class="form-group" style="margin-bottom: 2rem;">
+           <label class="form-label">Academic Year</label>
+           <input type="text" name="academic_year" class="form-control" value="2024-25" style="border-radius: 12px; height: 48px;">
+        </div>
+        <div style="display: flex; gap: 10px;">
+          <button type="submit" class="btn btn-primary" style="flex: 2; height: 48px; border-radius: 12px;"><i class="fas fa-save"></i> Generate Fee</button>
+          <button type="button" class="btn btn-outline" onclick="closeModal('addFeeModal')" style="flex: 1; height: 48px; border-radius: 12px;">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block extra_js %}<script>searchTable('feeSearch','feesTable');</script>{% endblock %}

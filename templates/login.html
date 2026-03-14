@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% block title %}Login - MONTFORT SENIOR SECONDARY SCHOOL{% endblock %}
+{% block content %}
+<div style="min-height: calc(100vh - 70px); background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%); display: flex; align-items: center; justify-content: center; padding: 2rem; position: relative; overflow: hidden;">
+  <!-- DECORATIVE BLOBS -->
+  <div style="position: absolute; top: -100px; right: -100px; width: 300px; height: 300px; background: var(--secondary); opacity: 0.1; filter: blur(80px); border-radius: 50%;"></div>
+  <div style="position: absolute; bottom: -100px; left: -100px; width: 300px; height: 300px; background: var(--primary); opacity: 0.2; filter: blur(80px); border-radius: 50%;"></div>
+
+  <div style="width: 100%; max-width: 440px; position: relative; z-index: 10; animation: fadeInUp 0.6s ease-out;">
+    <div style="text-align: center; margin-bottom: 2.5rem;">
+      <a href="{{ url_for('index') }}">
+        <img src="{{ url_for('static', filename='uploads/whitelogo.png') }}" alt="Logo" style="height: 90px; width: auto; display: block; margin: 0 auto 1.5rem; filter: drop-shadow(0 8px 20px rgba(0,0,0,0.4)); background: var(--primary); padding: 5px; border-radius: 20px;">
+      </a>
+      <h1 style="color: #fff; font-size: 1.75rem; font-weight: 800; letter-spacing: -0.5px; line-height: 1.2;">MONTFORT SCHOOL</h1>
+      <p style="color: rgba(255,255,255,0.6); font-weight: 500; font-size: 0.95rem; margin-top: 0.5rem;">Access your school portal</p>
+    </div>
+
+    <!-- FLASH MESSAGES -->
+    <div class="flash-messages" style="position: static; max-width: 100%; margin-bottom: 1.5rem;">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% for cat,msg in messages %}
+        <div class="alert alert-{{ 'success' if cat=='success' else 'danger' }}">
+          <i class="fas fa-{{ 'check-circle' if cat=='success' else 'exclamation-circle' }}"></i> {{ msg }}
+        </div>
+        {% endfor %}{% endwith %}
+    </div>
+
+    <div style="background: rgba(255, 255, 255, 1); border-radius: 24px; padding: 2.5rem; box-shadow: var(--shadow-xl); border: 1px solid rgba(255,255,255,0.1);">
+      <form method="POST">
+        <div class="form-group" style="margin-bottom: 1.5rem;">
+          <label class="form-label" style="font-weight: 600; color: var(--text); font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px;">Username</label>
+          <div style="position: relative;">
+              <i class="fas fa-user" style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--muted); font-size: 0.9rem;"></i>
+              <input type="text" name="username" class="form-control" style="padding-left: 40px; height: 50px;" placeholder="Username" required autofocus>
+          </div>
+        </div>
+        <div class="form-group" style="margin-bottom: 2rem;">
+          <label class="form-label" style="font-weight: 600; color: var(--text); font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px;">Password</label>
+          <div style="position: relative;">
+            <i class="fas fa-lock" style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--muted); font-size: 0.9rem;"></i>
+            <input type="password" name="password" id="passwordField" class="form-control" style="padding-left: 40px; height: 50px; padding-right: 45px;" placeholder="Password" required>
+            <button type="button" onclick="togglePwd()" style="position: absolute; right: 8px; top: 8px; width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; background: var(--bg); border: none; border-radius: 8px; cursor: pointer; color: var(--muted);" id="eyeBtn">
+                <i class="fas fa-eye"></i>
+            </button>
+          </div>
+        </div>
+        <button type="submit" class="btn btn-primary btn-lg" style="width: 100%; height: 52px; justify-content: center; font-size: 1rem; border-radius: 14px;">
+          Login to Portal <i class="fas fa-arrow-right" style="margin-left: 8px; font-size: 0.8rem;"></i>
+        </button>
+      </form>
+    </div>
+
+    <p style="text-align: center; margin-top: 2rem;">
+      <a href="{{ url_for('index') }}" style="color: rgba(255,255,255,0.6); font-size: 0.9rem; font-weight: 500; display: inline-flex; align-items: center; gap: 8px;">
+        <i class="fas fa-house"></i> Back to Home
+      </a>
+    </p>
+  </div>
+</div>
+<style>
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+</style>
+<script>
+function fillCreds(u,p){
+  document.querySelector('input[name=username]').value=u;
+  document.getElementById('passwordField').value=p;
+}
+function togglePwd(){
+  const f=document.getElementById('passwordField');
+  const b=document.getElementById('eyeBtn');
+  if(f.type==='password'){f.type='text';b.innerHTML='<i class="fas fa-eye-slash"></i>';}
+  else{f.type='password';b.innerHTML='<i class="fas fa-eye"></i>';}
+}
+</script>
+{% endblock %}

@@ -1,0 +1,141 @@
+{% extends "dashboard_base.html" %}
+{% block title %}Subject Management - MONTFORT SCHOOL{% endblock %}
+{% block extra_css %}
+<style>
+.management-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 2rem;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+}
+.subject-pill {
+    background: var(--primary-glow);
+    color: var(--primary);
+    padding: 6px 14px;
+    border-radius: 10px;
+    font-weight: 700;
+    font-size: 0.85rem;
+    display: inline-block;
+}
+.marks-badge {
+    background: #fef3c7;
+    color: #92400e;
+    padding: 4px 10px;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 0.75rem;
+}
+</style>
+{% endblock %}
+{% block content %}
+<div class="management-header">
+  <div>
+    <h1 style="font-size: 1.75rem; font-weight: 800; color: var(--text); letter-spacing: -0.5px;">Subject Repository</h1>
+    <p style="color: var(--muted); font-size: 0.9rem; font-weight: 500;">Define and manage academic subjects and instructor assignments.</p>
+  </div>
+  <button onclick="openModal('addSubModal')" class="btn btn-primary" style="height: 48px; padding: 0 24px;">
+    <i class="fas fa-plus"></i> Define New Subject
+  </button>
+</div>
+
+<div class="card" style="border-radius: 20px; border: none; box-shadow: var(--shadow-md);">
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th style="padding-left: 24px;">#</th>
+          <th>Subject Info</th>
+          <th>Assigned Class</th>
+          <th>Instructor</th>
+          <th>Max Marks</th>
+          <th style="padding-right: 24px; text-align: right;">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for s in subjects %}
+        <tr>
+          <td style="padding-left: 24px; font-weight: 700; color: var(--muted);">{{ loop.index }}</td>
+          <td>
+            <div style="font-weight: 700; color: var(--text);">{{ s.name }}</div>
+            <div style="font-size: 0.75rem; color: var(--muted); font-weight: 600;">Code: {{ s.code }}</div>
+          </td>
+          <td>
+            <div class="subject-pill">{{ classes_map.get(s.class_id|string,'N/A') }}</div>
+          </td>
+          <td>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <div style="width: 28px; height: 28px; border-radius: 8px; background: var(--bg); color: var(--primary); display: flex; align-items: center; justify-content: center; font-size: 0.75rem;">
+                <i class="fas fa-user-tie"></i>
+              </div>
+              <div style="font-weight: 600;">{{ teachers_map.get(s.teacher_id|string,'N/A') }}</div>
+            </div>
+          </td>
+          <td>
+            <div class="marks-badge">{{ s.max_marks }} Marks</div>
+          </td>
+          <td style="padding-right: 24px; text-align: right;">
+            <div style="display: flex; gap: 8px; justify-content: flex-end;">
+              <form id="del-sub-{{ s.id }}" method="POST" action="{{ url_for('admin_delete_subject', sid=s.id) }}" style="display: inline;">
+                <button type="button" class="nav-tool logout" onclick="confirmDelete('del-sub-{{ s.id }}','Permanently remove {{ s.name }} from the curriculum?')" title="Delete Subject"><i class="fas fa-trash-alt"></i></button>
+              </form>
+            </div>
+          </td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="6" style="text-align: center; padding: 5rem 2rem;">
+            <i class="fas fa-book-open" style="font-size: 3rem; color: var(--muted); opacity: 0.2; display: block; margin-bottom: 1.5rem;"></i>
+            <h3 style="font-weight: 700; color: var(--text);">No subjects defined</h3>
+            <p style="color: var(--muted);">Start building your curriculum by adding subjects.</p>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ADD SUBJECT MODAL -->
+<div class="modal-overlay" id="addSubModal" onclick="if(event.target==this) closeModal('addSubModal')">
+  <div class="modal" style="border-radius: 24px; overflow: hidden; max-width: 500px;">
+    <div class="modal-header" style="background: var(--primary); color: #fff; padding: 1.5rem 2rem;">
+      <h3 style="color: #fff; margin: 0; font-size: 1.25rem;"><i class="fas fa-plus-circle"></i> Define New Subject</h3>
+      <button class="modal-close" onclick="closeModal('addSubModal')" style="color: #fff; opacity: 0.8;">&times;</button>
+    </div>
+    <div class="modal-body" style="padding: 2.5rem 2rem;">
+      <form method="POST" action="{{ url_for('admin_add_subject') }}">
+        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1rem; margin-bottom: 1.25rem;">
+          <div class="form-group"><label class="form-label">Subject Name *</label><input type="text" name="name" class="form-control" required placeholder="e.g. Mathematics" style="border-radius: 12px; height: 48px;"></div>
+          <div class="form-group"><label class="form-label">Subject Code *</label><input type="text" name="code" class="form-control" required placeholder="MATH10" style="border-radius: 12px; height: 48px;"></div>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.25rem;">
+          <div class="form-group">
+            <label class="form-label">Class *</label>
+            <select name="class_id" class="form-control" required style="border-radius: 12px; height: 48px; appearance: auto;">
+              <option value="">Select Class</option>
+              {% for c in classes %}<option value="{{ c.id }}">{{ c.name }} - {{ c.section }}</option>{% endfor %}
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Instructor</label>
+            <select name="teacher_id" class="form-control" style="border-radius: 12px; height: 48px; appearance: auto;">
+              <option value="">Choose Teacher</option>
+              {% for t in teachers %}<option value="{{ t.id }}">{{ t.name }}</option>{% endfor %}
+            </select>
+          </div>
+        </div>
+        <div class="form-group" style="margin-bottom: 2rem;">
+          <label class="form-label">Maximum Marks</label>
+          <input type="number" name="max_marks" class="form-control" value="100" style="border-radius: 12px; height: 48px;">
+        </div>
+        <div style="display: flex; gap: 10px;">
+          <button type="submit" class="btn btn-primary" style="flex: 2; height: 48px; border-radius: 12px;"><i class="fas fa-save"></i> Save Subject</button>
+          <button type="button" class="btn btn-outline" onclick="closeModal('addSubModal')" style="flex: 1; height: 48px; border-radius: 12px;">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,187 @@
+{% extends "dashboard_base.html" %}
+{% block title %}My Journey - MONTFORT SCHOOL{% endblock %}
+{% block extra_css %}
+<style>
+.student-header {
+    background: linear-gradient(135deg, #1e3a8a 0%, #312e81 100%);
+    border-radius: 32px;
+    padding: 3rem;
+    color: #fff;
+    margin-bottom: 2rem;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    gap: 2.5rem;
+}
+.student-header::after {
+    content: '';
+    position: absolute;
+    bottom: -30px;
+    right: -30px;
+    width: 200px;
+    height: 200px;
+    background: var(--accent);
+    opacity: 0.1;
+    filter: blur(50px);
+    border-radius: 50%;
+}
+.student-avatar {
+    width: 100px;
+    height: 100px;
+    background: #fbbf24;
+    color: #1e3a8a;
+    border-radius: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 3rem;
+    font-weight: 900;
+    box-shadow: 0 10px 25px rgba(251,191,36,0.3);
+}
+.student-meta h1 { font-size: 1.75rem; font-weight: 800; margin-bottom: 0.5rem; }
+.student-meta p { opacity: 0.9; font-weight: 600; font-size: 1rem; }
+
+.finance-hub {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2.5rem;
+}
+.alert-card {
+    background: #fff;
+    border-radius: 24px;
+    padding: 1.5rem;
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    transition: all 0.3s ease;
+}
+.alert-card.warning { border-color: rgba(239,68,68,0.3); background: #fef2f2; }
+.alert-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+}
+
+.school-hub {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2.5rem;
+}
+.hub-tile {
+    padding: 1.5rem;
+    border-radius: 24px;
+    text-align: center;
+    text-decoration: none;
+    color: #fff;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+}
+.hub-tile:hover { transform: scale(1.05) translateY(-5px); }
+.hub-tile i { font-size: 1.75rem; }
+.hub-tile span { font-weight: 700; font-size: 0.85rem; }
+
+@media (max-width: 768px) {
+    .student-header {
+        flex-direction: column;
+        text-align: center;
+        padding: 2rem;
+    }
+    .student-avatar { margin: 0 auto; }
+}
+</style>
+{% endblock %}
+{% block content %}
+<div class="student-header">
+  <div class="student-avatar">{{ student.name[0] | upper }}</div>
+  <div class="student-meta">
+    <h1>Hello, {{ student.name }}</h1>
+    <p><i class="fas fa-graduation-cap"></i> Scholar ID: {{ student.roll_no }} | Registered: {{ student.admission_date }}</p>
+    <div style="margin-top: 1rem;">
+        <span style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); padding: 4px 12px; border-radius: 100px; font-size: 0.8rem; font-weight: 700;">
+            MONTFORT ACADEMIC YEAR 2024-25
+        </span>
+    </div>
+  </div>
+</div>
+
+<div class="finance-hub">
+  <div class="alert-card">
+    <div class="alert-icon" style="background: #eff6ff; color: #2563eb;"><i class="fas fa-receipt"></i></div>
+    <div>
+      <h4 style="font-size: 1.1rem; font-weight: 800; color: var(--text);">{{ fees|length }} Records</h4>
+      <p style="font-size: 0.8rem; color: var(--muted);">Total fee entries logged</p>
+    </div>
+  </div>
+  {% set pending_count = pending_fees|length %}
+  <div class="alert-card {{ 'warning' if pending_count > 0 }}">
+    <div class="alert-icon" style="background: {{ '#fee2e2' if pending_count > 0 else '#f0fdf4' }}; color: {{ '#dc2626' if pending_count > 0 else '#16a34a' }};">
+        <i class="fas fa-{{ 'exclamation-circle' if pending_count > 0 else 'check-circle' }}"></i>
+    </div>
+    <div>
+      <h4 style="font-size: 1.1rem; font-weight: 800; color: {{ '#dc2626' if pending_count > 0 else 'var(--text)' }};">
+          {{ pending_count }} Pending
+      </h4>
+      <p style="font-size: 0.8rem; color: var(--muted);">Dues requiring attention</p>
+    </div>
+  </div>
+</div>
+
+{% if pending_fees %}
+<div class="section-card" style="margin-bottom: 2.5rem; border: 1px solid rgba(239,68,68,0.2); background: #fff;">
+    <div style="padding: 1.5rem; background: #fef2f2; border-radius: 20px 20px 0 0; border-bottom: 1px solid rgba(239,68,68,0.1);">
+        <h3 style="color: #dc2626; margin: 0; font-size: 1rem;"><i class="fas fa-bell"></i> Urgent Fee Notices</h3>
+    </div>
+    <div style="padding: 0 1.5rem;">
+        {% for f in pending_fees %}
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 1rem 0; {{ 'border-bottom: 1px solid #f1f5f9;' if not loop.last }}">
+            <span style="font-weight: 700; color: var(--text);">{{ f.fee_type }}</span>
+            <div style="text-align: right;">
+                <span style="color: #dc2626; font-weight: 800; display: block;">₹{{ f.amount }}</span>
+                <span style="font-size: 0.75rem; font-weight: 600; color: var(--muted);">DUE: {{ f.due_date }}</span>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+<div class="school-hub">
+  {% for label,icon,url,color in [('Timetable','fas fa-calendar-alt','student_timetable','#2563eb'),('Attendance','fas fa-user-check','student_attendance','#059669'),('Report Card','fas fa-chart-bar','student_results','#7c3aed'),('Assignments','fas fa-book','student_assignments','#db2777'),('Finances','fas fa-wallet','student_fees','#4f46e5')] %}
+  <a href="{{ url_for(url) }}" class="hub-tile" style="background: {{ color }}; box-shadow: 0 8px 16px {{ color }}20;">
+    <i class="{{ icon }}"></i>
+    <span>{{ label }}</span>
+  </a>
+  {% endfor %}
+</div>
+
+<div class="section-card" style="padding: 2rem; background: #fff; border-radius: 28px; border: 1px solid var(--border);">
+    <h3 style="font-size: 1.25rem; font-weight: 800; color: var(--text); margin-bottom: 2rem; display: flex; align-items: center; gap: 10px;">
+        <i class="fas fa-bullhorn" style="color: var(--secondary);"></i> Notice Board
+    </h3>
+    <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+      {% for a in announcements | reverse %}
+      <div style="padding: 1.5rem; border-radius: 20px; background: var(--bg); border: 1px solid var(--border); position: relative; overflow: hidden;">
+        <div style="position: absolute; top: 0; left: 0; width: 4px; height: 100%; background: var(--secondary);"></div>
+        <h4 style="font-size: 1rem; font-weight: 800; color: var(--text); margin-bottom: 0.5rem;">{{ a.title }}</h4>
+        <p style="font-size: 0.9rem; color: var(--muted); line-height: 1.6;">{{ a.content }}</p>
+        <div style="margin-top: 1rem; font-size: 0.75rem; font-weight: 700; color: var(--muted); opacity: 0.6;">
+            <i class="far fa-calendar-alt"></i> {{ a.created_at[:10] if a.created_at else '' }}
+        </div>
+      </div>
+      {% else %}
+      <div style="text-align: center; padding: 2rem; color: var(--muted);">No new announcements</div>
+      {% endfor %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,190 @@
+{% extends "dashboard_base.html" %}
+{% block title %}Timetable Management - MONTFORT SCHOOL{% endblock %}
+{% block extra_css %}
+<style>
+.management-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 2rem;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+}
+.tt-day-badge {
+    background: var(--primary);
+    color: #fff;
+    padding: 4px 12px;
+    border-radius: 8px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+.tt-period {
+    width: 32px;
+    height: 32px;
+    background: var(--bg);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    color: var(--primary);
+    font-size: 0.85rem;
+}
+.time-pill {
+    background: #f1f5f9;
+    color: #475569;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    font-family: monospace;
+}
+</style>
+{% endblock %}
+{% block content %}
+<div class="management-header">
+  <div>
+    <h1 style="font-size: 1.75rem; font-weight: 800; color: var(--text); letter-spacing: -0.5px;">Schedule & Timetable</h1>
+    <p style="color: var(--muted); font-size: 0.9rem; font-weight: 500;">Organize school hours, class schedules, and subject rotations.</p>
+  </div>
+  <button onclick="openModal('addTTModal')" class="btn btn-primary" style="height: 48px; padding: 0 24px;">
+    <i class="fas fa-calendar-plus"></i> New Time Entry
+  </button>
+</div>
+
+<!-- FILTER -->
+<div class="filter-card" style="background: #fff; border-radius: 20px; padding: 1.25rem; border: 1px solid var(--border); margin-bottom: 2rem; box-shadow: var(--shadow-sm);">
+  <form method="GET" style="display: flex; gap: 1rem; align-items: flex-end; flex-wrap: wrap;">
+    <div style="flex: 1; min-width: 250px;">
+      <label class="form-label" style="font-size: 0.75rem; text-transform: uppercase;">Filter by Class</label>
+      <select name="class_id" class="form-control" style="height: 48px; border-radius: 12px; appearance: auto;">
+        <option value="">All Active Classes</option>
+        {% for c in classes %}
+        <option value="{{ c.id }}" {{ 'selected' if c.id|string==selected_class }}>{{ c.name }} - {{ c.section }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <button type="submit" class="btn btn-primary" style="height: 48px; padding: 0 24px;">
+      <i class="fas fa-filter"></i> Apply Filter
+    </button>
+  </form>
+</div>
+
+<div class="card" style="border-radius: 20px; border: none; box-shadow: var(--shadow-md);">
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th style="padding-left: 24px;">Period</th>
+          <th>Class & Day</th>
+          <th>Subject Info</th>
+          <th>Instructor</th>
+          <th>Timing</th>
+          <th style="padding-right: 24px; text-align: right;">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for t in timetable %}
+        <tr>
+          <td style="padding-left: 24px;">
+            <div class="tt-period">{{ t.period }}</div>
+          </td>
+          <td>
+            <div style="font-weight: 700; color: var(--text); margin-bottom: 4px;">
+              {% for c in classes %}{% if c.id|string==t.class_id|string %}{{ c.name }} {{ c.section }}{% endif %}{% endfor %}
+            </div>
+            <div class="tt-day-badge">{{ t.day }}</div>
+          </td>
+          <td>
+            <div style="font-weight: 700; color: var(--primary);">{{ subjects_map.get(t.subject_id|string,'N/A') }}</div>
+          </td>
+          <td>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <div style="width: 28px; height: 28px; border-radius: 8px; background: var(--bg); color: var(--primary); display: flex; align-items: center; justify-content: center; font-size: 0.75rem;">
+                <i class="fas fa-user-tie"></i>
+              </div>
+              <div style="font-weight: 600;">{{ teachers_map.get(t.teacher_id|string,'N/A') }}</div>
+            </div>
+          </td>
+          <td>
+            <div class="time-pill">
+              <i class="fas fa-clock" style="font-size: 0.7rem;"></i> {{ t.start_time }} - {{ t.end_time }}
+            </div>
+          </td>
+          <td style="padding-right: 24px; text-align: right;">
+            <div style="display: flex; gap: 8px; justify-content: flex-end;">
+              <form id="del-tt-{{ t.id }}" method="POST" action="{{ url_for('admin_delete_timetable', tid=t.id) }}" style="display: inline;">
+                <button type="button" class="nav-tool logout" onclick="confirmDelete('del-tt-{{ t.id }}','Remove this timetable entry?')" title="Delete Entry"><i class="fas fa-trash-alt"></i></button>
+              </form>
+            </div>
+          </td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="6" style="text-align: center; padding: 5rem 2rem;">
+            <i class="fas fa-calendar-times" style="font-size: 3rem; color: var(--muted); opacity: 0.2; display: block; margin-bottom: 1.5rem;"></i>
+            <h3 style="font-weight: 700; color: var(--text);">No schedule entries</h3>
+            <p style="color: var(--muted);">Choose a class or add a new entry to get started.</p>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ADD MODAL -->
+<div class="modal-overlay" id="addTTModal" onclick="if(event.target==this) closeModal('addTTModal')">
+  <div class="modal" style="border-radius: 24px; overflow: hidden; max-width: 600px;">
+    <div class="modal-header" style="background: var(--primary); color: #fff; padding: 1.5rem 2rem;">
+      <h3 style="color: #fff; margin: 0; font-size: 1.25rem;"><i class="fas fa-clock"></i> New Timetable Entry</h3>
+      <button class="modal-close" onclick="closeModal('addTTModal')" style="color: #fff; opacity: 0.8;">&times;</button>
+    </div>
+    <div class="modal-body" style="padding: 2.5rem 2rem;">
+      <form method="POST" action="{{ url_for('admin_add_timetable') }}">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.25rem;">
+          <div class="form-group">
+            <label class="form-label">Target Class *</label>
+            <select name="class_id" class="form-control" required style="border-radius: 12px; height: 48px; appearance: auto;">
+              <option value="">Select Class</option>
+              {% for c in classes %}<option value="{{ c.id }}">{{ c.name }} - {{ c.section }}</option>{% endfor %}
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Day of Week *</label>
+            <select name="day" class="form-control" required style="border-radius: 12px; height: 48px; appearance: auto;">
+              {% for d in ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'] %}<option>{{ d }}</option>{% endfor %}
+            </select>
+          </div>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; margin-bottom: 1.25rem;">
+           <div class="form-group"><label class="form-label">Period # *</label><input type="number" name="period" class="form-control" required min="1" max="10" style="border-radius: 12px; height: 48px;"></div>
+           <div class="form-group"><label class="form-label">Start Time</label><input type="time" name="start_time" class="form-control" style="border-radius: 12px; height: 48px;"></div>
+           <div class="form-group"><label class="form-label">End Time</label><input type="time" name="end_time" class="form-control" style="border-radius: 12px; height: 48px;"></div>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 2rem;">
+          <div class="form-group">
+            <label class="form-label">Subject *</label>
+            <select name="subject_id" class="form-control" required style="border-radius: 12px; height: 48px; appearance: auto;">
+              <option value="">Select Subject</option>
+              {% for s in subjects %}<option value="{{ s.id }}">{{ s.name }}</option>{% endfor %}
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Assigned Teacher</label>
+            <select name="teacher_id" class="form-control" style="border-radius: 12px; height: 48px; appearance: auto;">
+              <option value="">Choose Teacher</option>
+              {% for t in teachers %}<option value="{{ t.id }}">{{ t.name }}</option>{% endfor %}
+            </select>
+          </div>
+        </div>
+        <div style="display: flex; gap: 10px;">
+          <button type="submit" class="btn btn-primary" style="flex: 2; height: 48px; border-radius: 12px;"><i class="fas fa-save"></i> Save Schedule</button>
+          <button type="button" class="btn btn-outline" onclick="closeModal('addTTModal')" style="flex: 1; height: 48px; border-radius: 12px;">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

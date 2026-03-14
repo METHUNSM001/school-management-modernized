@@ -1,0 +1,98 @@
+{% extends "dashboard_base.html" %}
+{% block title %}Library - Admin{% endblock %}
+{% block content %}
+<div class="page-header"><h1><i class="fas fa-book-open"></i> Library Management</h1><button onclick="openModal('addBookModal')" class="btn btn-primary"><i class="fas fa-plus"></i> Add Book</button></div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-bottom:1.5rem;">
+  <div class="stat-card blue"><div class="stat-icon ic-blue"><i class="fas fa-book"></i></div><div class="stat-info"><h4>{{ books|length }}</h4><p>Total Books</p></div></div>
+  <div class="stat-card green"><div class="stat-icon ic-green"><i class="fas fa-book-open"></i></div><div class="stat-info"><h4>{{ issued|length }}</h4><p>Currently Issued</p></div></div>
+</div>
+<!-- BOOKS -->
+<div class="card" style="margin-bottom:1.5rem;">
+  <div class="card-header"><h3><i class="fas fa-book"></i> Book Catalog ({{ books|length }})</h3></div>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>#</th><th>Title</th><th>Author</th><th>ISBN</th><th>Category</th><th>Copies</th><th>Available</th><th>Actions</th></tr></thead>
+      <tbody>
+        {% for b in books %}
+        <tr>
+          <td>{{ loop.index }}</td><td><strong>{{ b.title }}</strong></td><td>{{ b.author }}</td>
+          <td><small>{{ b.isbn }}</small></td><td><span class="badge badge-info">{{ b.category }}</span></td>
+          <td>{{ b.copies }}</td>
+          <td><span class="badge badge-{{ 'success' if b.available|int > 0 else 'danger' }}">{{ b.available }}</span></td>
+          <td>
+            <div style="display:flex;gap:5px;">
+              {% if b.available|int > 0 %}<button onclick="setIssueBook({{ b.id }},'{{ b.title }}')" class="btn btn-sm btn-success"><i class="fas fa-hand-holding"></i> Issue</button>{% endif %}
+              <form id="del-bk-{{ b.id }}" method="POST" action="{{ url_for('admin_delete_book', bid=b.id) }}"><button type="button" class="btn btn-sm btn-danger" onclick="confirmDelete('del-bk-{{ b.id }}')"><i class="fas fa-trash"></i></button></form>
+            </div>
+          </td>
+        </tr>
+        {% else %}<tr><td colspan="8" style="text-align:center;color:#999;padding:2rem;">No books in catalog.</td></tr>{% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+<!-- ISSUED -->
+<div class="card">
+  <div class="card-header"><h3><i class="fas fa-list"></i> Issued Books</h3></div>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>#</th><th>Book</th><th>Student</th><th>Issue Date</th><th>Due Date</th><th>Return Date</th><th>Fine</th><th>Action</th></tr></thead>
+      <tbody>
+        {% for i in issued %}
+        <tr>
+          <td>{{ loop.index }}</td>
+          <td>{{ books_map.get(i.book_id|string,'N/A') }}</td>
+          <td>{{ students_map.get(i.student_id|string,'N/A') }}</td>
+          <td>{{ i.issue_date }}</td><td>{{ i.due_date }}</td>
+          <td>{{ i.return_date or '<span class="badge badge-warning">Not Returned</span>' }}</td>
+          <td>{% if i.fine %}₹{{ i.fine }}{% else %}-{% endif %}</td>
+          <td>
+            {% if not i.return_date %}
+            <form method="POST" action="{{ url_for('admin_return_book', iid=i.id) }}"><button type="submit" class="btn btn-sm btn-primary"><i class="fas fa-undo"></i> Return</button></form>
+            {% else %}<span class="badge badge-success">Returned</span>{% endif %}
+          </td>
+        </tr>
+        {% else %}<tr><td colspan="8" style="text-align:center;color:#999;padding:2rem;">No books currently issued.</td></tr>{% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+<!-- ADD BOOK MODAL -->
+<div class="modal-overlay" id="addBookModal">
+  <div class="modal"><div class="modal-header"><h3>Add Book</h3><button class="modal-close" onclick="closeModal('addBookModal')">×</button></div>
+  <div class="modal-body"><form method="POST" action="{{ url_for('admin_add_book') }}">
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Title *</label><input type="text" name="title" class="form-control" required></div>
+      <div class="form-group"><label class="form-label">Author *</label><input type="text" name="author" class="form-control" required></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">ISBN</label><input type="text" name="isbn" class="form-control"></div>
+      <div class="form-group"><label class="form-label">Category</label>
+        <select name="category" class="form-control"><option>Textbook</option><option>Fiction</option><option>Non-Fiction</option><option>Biography</option><option>Science</option><option>Reference</option></select>
+      </div>
+      <div class="form-group"><label class="form-label">No. of Copies</label><input type="number" name="copies" class="form-control" value="1" min="1"></div>
+    </div>
+    <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Add Book</button>
+  </form></div></div>
+</div>
+<!-- ISSUE BOOK MODAL -->
+<div class="modal-overlay" id="issueBookModal">
+  <div class="modal"><div class="modal-header"><h3><i class="fas fa-hand-holding-book"></i> Issue Book</h3><button class="modal-close" onclick="closeModal('issueBookModal')">×</button></div>
+  <div class="modal-body"><form method="POST" action="{{ url_for('admin_issue_book') }}">
+    <input type="hidden" name="book_id" id="issueBookId">
+    <div class="form-group"><label class="form-label">Book</label><input type="text" id="issueBookTitle" class="form-control" readonly style="background:#f8f9fa;"></div>
+    <div class="form-group"><label class="form-label">Student *</label><select name="student_id" class="form-control" required><option value="">Select Student</option>{% for s in students %}<option value="{{ s.id }}">{{ s.name }} ({{ s.roll_no }})</option>{% endfor %}</select></div>
+    <p style="font-size:0.85rem;color:#888;"><i class="fas fa-info-circle"></i> Due date will be set to 14 days from today.</p>
+    <button type="submit" class="btn btn-primary"><i class="fas fa-check"></i> Issue Book</button>
+  </form></div></div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+function setIssueBook(id, title){
+  document.getElementById('issueBookId').value = id;
+  document.getElementById('issueBookTitle').value = title;
+  openModal('issueBookModal');
+}
+</script>
+{% endblock %}

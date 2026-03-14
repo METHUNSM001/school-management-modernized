@@ -1,0 +1,41 @@
+{% extends "dashboard_base.html" %}
+{% block title %}My Fees{% endblock %}
+{% block content %}
+<div class="page-header"><h1><i class="fas fa-rupee-sign"></i> My Fee Payments</h1></div>
+{% set paid = fees | selectattr('status','equalto','paid') | list %}
+{% set pending = fees | selectattr('status','equalto','pending') | list %}
+<div class="stats-grid">
+  <div class="stat-card green"><div class="stat-icon ic-green"><i class="fas fa-check-circle"></i></div><div class="stat-info"><h4>₹{{ paid|sum(attribute='amount')|int }}</h4><p>Amount Paid</p></div></div>
+  <div class="stat-card red"><div class="stat-icon ic-red"><i class="fas fa-exclamation-circle"></i></div><div class="stat-info"><h4>₹{{ pending|sum(attribute='amount')|int }}</h4><p>Amount Due</p></div></div>
+  <div class="stat-card blue"><div class="stat-icon ic-blue"><i class="fas fa-file-invoice"></i></div><div class="stat-info"><h4>{{ fees|length }}</h4><p>Total Records</p></div></div>
+</div>
+{% if pending %}
+<div style="background:#fff3e0;border-left:4px solid #ff6f00;border-radius:8px;padding:1.2rem 1.5rem;margin-bottom:1.5rem;">
+  <h4 style="color:#ff6f00;margin-bottom:8px;"><i class="fas fa-bell"></i> Payment Reminder</h4>
+  {% for f in pending %}
+  <div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid #ffe0b2;">
+    <span>{{ f.fee_type }}</span><span><strong>₹{{ f.amount }}</strong> due by {{ f.due_date }}</span>
+  </div>
+  {% endfor %}
+  <p style="font-size:0.85rem;color:#888;margin-top:8px;">Please contact the school accounts office or pay at the front desk.</p>
+</div>
+{% endif %}
+<div class="card">
+  <div class="card-header"><h3><i class="fas fa-list"></i> Fee Details</h3></div>
+  <div class="table-wrap"><table>
+    <thead><tr><th>#</th><th>Fee Type</th><th>Amount</th><th>Academic Year</th><th>Due Date</th><th>Paid Date</th><th>Receipt No</th><th>Status</th></tr></thead>
+    <tbody>
+      {% for f in fees %}
+      <tr>
+        <td>{{ loop.index }}</td><td>{{ f.fee_type }}</td>
+        <td><strong>₹{{ f.amount }}</strong></td>
+        <td>{{ f.academic_year }}</td><td>{{ f.due_date }}</td>
+        <td>{{ f.paid_date or '-' }}</td>
+        <td>{{ f.receipt_no or '-' }}</td>
+        <td><span class="badge badge-{{ 'success' if f.status=='paid' else 'danger' }}">{{ f.status | title }}</span></td>
+      </tr>
+      {% else %}<tr><td colspan="8" style="text-align:center;color:#999;padding:2rem;">No fee records.</td></tr>{% endfor %}
+    </tbody>
+  </table></div>
+</div>
+{% endblock %}

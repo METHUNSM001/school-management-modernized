@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{% block title %}MONTFORT SENIOR SECONDARY SCHOOL{% endblock %}</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+:root {
+    --primary: #1e3a8a;
+    --primary-glow: rgba(30, 58, 138, 0.15);
+    --secondary: #db2777;
+    --accent: #f59e0b;
+    --success: #10b981;
+    --danger: #ef4444;
+    --warning: #facc15;
+    --bg: #f8fafc;
+    --card: #ffffff;
+    --text: #0f172a;
+    --muted: #64748b;
+    --border: #e2e8f0;
+    --sidebar-w: 260px;
+    --glass: rgba(255, 255, 255, 0.8);
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { 
+    font-family: 'Outfit', sans-serif; 
+    background: var(--bg); 
+    color: var(--text); 
+    min-height: 100vh;
+    overflow-x: hidden;
+    scroll-behavior: smooth;
+}
+a { text-decoration: none; color: inherit; transition: all 0.2s ease; }
+
+/* NAVIGATION */
+.navbar {
+    background: var(--glass);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    color: var(--text);
+    padding: 0 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 70px;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    border-bottom: 1px solid var(--border);
+    transition: all 0.3s ease;
+}
+.navbar.scrolled { padding: 0 2rem; background: var(--card); box-shadow: var(--shadow-md); }
+
+.navbar-brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+.navbar-brand h1 { font-size: 1.25rem; font-weight: 800; color: var(--primary); line-height: 1; letter-spacing: -0.5px; }
+.navbar-brand p { font-size: 0.7rem; font-weight: 500; color: var(--muted); text-transform: uppercase; margin-top: 2px; }
+
+.nav-links { display: flex; align-items: center; gap: 8px; }
+.nav-links a {
+    color: var(--text);
+    padding: 8px 16px;
+    border-radius: 10px;
+    font-size: 0.95rem;
+    font-weight: 500;
+}
+.nav-links a:hover, .nav-links a.active { background: var(--primary-glow); color: var(--primary); }
+.nav-links .btn-login {
+    background: var(--primary);
+    color: #fff !important;
+    padding: 10px 22px;
+    border-radius: 12px;
+    font-weight: 600;
+    box-shadow: 0 4px 12px rgba(30, 58, 138, 0.2);
+}
+.nav-links .btn-login:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(30, 58, 138, 0.3); }
+
+.hamburger { display: none; background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--primary); padding: 5px; }
+
+/* MOBILE NAVIGATION OVERLAY */
+.mobile-nav-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.4);
+    backdrop-filter: blur(4px);
+    z-index: 2000;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+}
+.mobile-nav-overlay.active { opacity: 1; pointer-events: all; }
+
+.mobile-nav {
+    position: fixed;
+    top: 0;
+    right: -280px;
+    bottom: 0;
+    width: 280px;
+    background: #fff;
+    z-index: 2001;
+    padding: 2rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: var(--shadow-xl);
+}
+.mobile-nav.active { right: 0; }
+.mobile-nav-close { align-self: flex-end; font-size: 1.5rem; color: var(--muted); cursor: pointer; }
+.mobile-nav a { padding: 12px 20px; border-radius: 12px; font-weight: 500; color: var(--text); }
+.mobile-nav a:hover { background: var(--primary-glow); color: var(--primary); }
+.mobile-nav a.active { background: var(--primary); color: #fff; }
+
+/* FLASH MESSAGES */
+.flash-messages { 
+    position: fixed; top: 85px; right: 20px; z-index: 1500; 
+    max-width: 350px; width: 100%; pointer-events: none;
+}
+.alert { 
+    padding: 16px 20px; border-radius: 14px; margin-bottom: 12px; 
+    display: flex; align-items: center; gap: 12px; font-size: 0.95rem; font-weight: 500;
+    box-shadow: var(--shadow-lg); pointer-events: all; animation: slideIn 0.3s ease-out;
+    border: 1px solid rgba(255,255,255,0.2);
+}
+@keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+.alert-success { background: #ecfdf5; color: #065f46; }
+.alert-danger { background: #fef2f2; color: #991b1b; }
+
+/* BUTTONS */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    border-radius: 12px;
+    border: none;
+    cursor: pointer;
+    font-size: 0.95rem;
+    font-weight: 600;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.btn-primary { background: var(--primary); color: #fff; box-shadow: 0 4px 12px rgba(30, 58, 138, 0.15); }
+.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(30, 58, 138, 0.25); }
+
+.btn-secondary { background: var(--secondary); color: #fff; }
+.btn-secondary:hover { transform: translateY(-1px); filter: brightness(1.1); }
+
+/* CARDS */
+.card { background: var(--card); border-radius: 20px; border: 1px solid var(--border); box-shadow: var(--shadow-sm); transition: transform 0.3s ease, box-shadow 0.3s ease; }
+.card:hover { transform: translateY(-5px); box-shadow: var(--shadow-lg); }
+
+/* FOOTER */
+.footer { background: #0f172a; color: #fff; padding: 4rem 2rem 2rem; }
+.footer-grid { 
+    display: grid; 
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); 
+    gap: 3rem; margin-bottom: 3rem; 
+}
+.footer h4 { color: #fff; margin-bottom: 1.5rem; font-size: 1.1rem; font-weight: 700; position: relative; }
+.footer h4::after { content: ''; position: absolute; left: 0; bottom: -8px; width: 40px; height: 3px; background: var(--primary); border-radius: 2px; }
+.footer p, .footer a { color: #94a3b8; font-size: 0.95rem; line-height: 1.6; display: block; margin-bottom: 10px; }
+.footer a:hover { color: #fff; transform: translateX(5px); }
+
+/* RESPONSIVE */
+@media (max-width: 1024px) {
+    .nav-links { display: none; }
+    .hamburger { display: block; }
+}
+/* MODAL */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:2000;align-items:center;justify-content:center;}
+.modal-overlay.active{display:flex;}
+.modal{background:#fff;border-radius:14px;width:90%;max-width:600px;max-height:90vh;overflow-y:auto;}
+.modal-header{padding:1.2rem 1.5rem;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;}
+.modal-header h3{color:var(--primary);font-size:1.1rem;}
+.modal-close{background:none;border:none;font-size:1.4rem;cursor:pointer;color:var(--muted);}
+.modal-body{padding:1.5rem;}
+/* SIDEBAR */
+.sidebar{width:var(--sidebar-w);background:var(--primary);color:#fff;min-height:100vh;position:fixed;top:65px;left:0;z-index:500;overflow-y:auto;transition:transform 0.3s;}
+.sidebar-menu{padding:1rem 0;}
+.sidebar-section{padding:6px 20px;font-size:0.75rem;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:1px;margin-top:10px;}
+.sidebar-link{display:flex;align-items:center;gap:10px;padding:11px 20px;color:rgba(255,255,255,0.85);font-size:0.9rem;transition:all 0.2s;border-left:3px solid transparent;}
+.sidebar-link:hover,.sidebar-link.active{background:rgba(255,255,255,0.1);color:#fff;border-left-color:#ffd740;}
+.sidebar-link i{width:20px;text-align:center;}
+.main-content{margin-left:var(--sidebar-w);padding:1.5rem;min-height:calc(100vh - 65px);}
+.page-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;}
+.page-header h1{font-size:1.4rem;color:var(--primary);display:flex;align-items:center;gap:10px;}
+/* SEARCH */
+.search-box{display:flex;align-items:center;gap:8px;background:#fff;border:1.5px solid var(--border);border-radius:8px;padding:5px 12px;width:250px;}
+.search-box input{border:none;outline:none;font-size:0.9rem;width:100%;}
+/* RESPONSIVE */
+@media(max-width:900px){
+  .nav-links{display:none;position:absolute;top:65px;left:0;right:0;background:var(--primary);flex-direction:column;padding:1rem;gap:5px;}
+  .nav-links.open{display:flex;}
+  .hamburger{display:block;}
+  .sidebar{transform:translateX(-100%);}
+  .sidebar.open{transform:translateX(0);}
+  .main-content{margin-left:0;}
+}
+/* HERO */
+.hero{background:linear-gradient(135deg,var(--primary) 0%,#4a148c 100%);color:#fff;padding:80px 2rem;text-align:center;}
+.hero h1{font-size:2.8rem;font-weight:800;margin-bottom:1rem;line-height:1.2;}
+.hero p{font-size:1.15rem;opacity:0.9;max-width:600px;margin:0 auto 2rem;}
+.hero-btns{display:flex;gap:15px;justify-content:center;flex-wrap:wrap;}
+/* SECTION */
+.section{padding:60px 2rem;}
+.section-title{text-align:center;margin-bottom:3rem;}
+.section-title h2{font-size:2rem;color:var(--primary);margin-bottom:0.5rem;}
+.section-title p{color:var(--muted);}
+.container{max-width:1200px;margin:0 auto;}
+/* GRID */
+.grid-3{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1.5rem;}
+.grid-4{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1.5rem;}
+.grid-2{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:1.5rem;}
+</style>
+{% block extra_css %}{% endblock %}
+</head>
+<body>
+{% block full_body %}
+<!-- MOBILE NAV OVERLAY -->
+<div class="mobile-nav-overlay" id="mobileOverlay" onclick="toggleMenu()"></div>
+<div class="mobile-nav" id="mobileNav">
+    <div class="mobile-nav-close" onclick="toggleMenu()">&times;</div>
+    <a href="{{ url_for('index') }}" class="{% if request.endpoint=='index' %}active{% endif %}">Home</a>
+    <a href="{{ url_for('about') }}" class="{% if request.endpoint=='about' %}active{% endif %}">About</a>
+    <a href="{{ url_for('academics') }}" class="{% if request.endpoint=='academics' %}active{% endif %}">Academics</a>
+    <a href="{{ url_for('admissions') }}" class="{% if request.endpoint=='admissions' %}active{% endif %}">Admissions</a>
+    <a href="{{ url_for('facilities') }}" class="{% if request.endpoint=='facilities' %}active{% endif %}">Facilities</a>
+    <a href="{{ url_for('events') }}" class="{% if request.endpoint=='events' %}active{% endif %}">Events</a>
+    <a href="{{ url_for('gallery') }}" class="{% if request.endpoint=='gallery' %}active{% endif %}">Gallery</a>
+    <a href="{{ url_for('contact') }}" class="{% if request.endpoint=='contact' %}active{% endif %}">Contact</a>
+    {% if session.user_id %}
+    <a href="{{ url_for('dashboard') }}" class="btn-login" style="text-align:center;">Dashboard</a>
+    {% else %}
+    <a href="{{ url_for('login') }}" class="btn-login" style="text-align:center;">Portal Login</a>
+    {% endif %}
+</div>
+
+<!-- DESKTOP NAVBAR -->
+<nav class="navbar" id="navbar">
+  <a class="navbar-brand" href="{{ url_for('index') }}">
+    <img src="{{ url_for('static', filename='uploads/whitelogo.png') }}" alt="Logo" style="height:48px; border-radius:4px; background: var(--primary); padding: 4px;">
+    <div>
+      <h1>MONTFORT SCHOOL</h1>
+      <p>D.G. PUDUR, ERODE</p>
+    </div>
+  </a>
+  <div class="nav-links">
+    <a href="{{ url_for('index') }}" class="{% if request.endpoint=='index' %}active{% endif %}">Home</a>
+    <a href="{{ url_for('about') }}" class="{% if request.endpoint=='about' %}active{% endif %}">About</a>
+    <a href="{{ url_for('academics') }}" class="{% if request.endpoint=='academics' %}active{% endif %}">Academics</a>
+    <a href="{{ url_for('admissions') }}" class="{% if request.endpoint=='admissions' %}active{% endif %}">Admissions</a>
+    <a href="{{ url_for('facilities') }}" class="{% if request.endpoint=='facilities' %}active{% endif %}">Facilities</a>
+    <a href="{{ url_for('contact') }}" class="{% if request.endpoint=='contact' %}active{% endif %}">Contact</a>
+    {% if session.user_id %}
+    <a href="{{ url_for('dashboard') }}" class="btn-login">Dashboard</a>
+    {% else %}
+    <a href="{{ url_for('login') }}" class="btn-login">Login</a>
+    {% endif %}
+  </div>
+  <button class="hamburger" onclick="toggleMenu()"><i class="fas fa-bars-staggered"></i></button>
+</nav>
+
+<div class="flash-messages">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% for cat,msg in messages %}
+    <div class="alert alert-{{ 'success' if cat=='success' else 'danger' }}">
+      <i class="fas fa-{{ 'check-circle' if cat=='success' else 'exclamation-circle' }}"></i> {{ msg }}
+    </div>
+    {% endfor %}{% endwith %}
+</div>
+{% block content %}{% endblock %}
+<!-- FOOTER -->
+<footer class="footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div>
+        <h4>MONTFORT SENIOR SECONDARY SCHOOL</h4>
+        <p>Providing quality education and holistic development since 2012. CBSE Affiliated School.</p>
+        <p style="margin-top:10px;"><i class="fas fa-map-marker-alt"></i> SH-82, Athani Main Road, D.G.Pudur, Erode (Dt), Tamil Nadu 638503</p>
+      </div>
+      <div>
+        <h4>Quick Links</h4>
+        <a href="{{ url_for('about') }}" style="display:block;">About Us</a>
+        <a href="{{ url_for('academics') }}" style="display:block;">Academics</a>
+        <a href="{{ url_for('admissions') }}" style="display:block;">Admissions</a>
+        <a href="{{ url_for('events') }}" style="display:block;">Events</a>
+      </div>
+      <div>
+        <h4>Contact</h4>
+          <li style="margin-bottom:8px;"><i class="fas fa-phone" style="margin-right:8px;color:var(--secondary);"></i> +91 9566662533</li>
+          <li style="margin-bottom:8px;"><i class="fas fa-envelope" style="margin-right:8px;color:var(--secondary);"></i> montfortdgpudur@gmail.com</li>
+        <p><i class="fas fa-clock"></i> Mon-Sat: 8AM - 4PM</p>
+      </div>
+      <div>
+        <h4>Login Portal</h4>
+          {% for role,user,pwd,color,icon in [('Admin','admin','admin123','#1a237e','fa-user-shield'),('Teacher','teacher1','teacher123','#2e7d32','fa-chalkboard-teacher'),('Student','student1','student123','#e91e63','fa-user-graduate'),('Parent','parent1','parent123','#ff6f00','fa-users')] %}
+          {% set btn_style = "padding:8px;border:1.5px solid " ~ color ~ ";border-radius:8px;background:transparent;cursor:pointer;color:" ~ color ~ ";font-size:0.8rem;font-weight:600;display:flex;align-items:center;gap:6px;justify-content:center;" %}
+          <button onclick="fillCreds('{{ user }}','{{ pwd }}')" style="{{ btn_style }}">
+            <i class="fas {{ icon }}"></i> {{ role }}
+          </button>
+          {% endfor %}
+      </div>
+    </div>
+    <div class="footer-bottom">© 2024 MONTFORT SENIOR SECONDARY SCHOOL. All rights reserved.</div>
+  </div>
+</footer>
+{% endblock %}
+<script>
+function toggleMenu(){
+    document.getElementById('mobileNav').classList.toggle('active');
+    document.getElementById('mobileOverlay').classList.toggle('active');
+}
+window.onscroll = function() {
+    const nav = document.getElementById('navbar');
+    if (window.pageYOffset > 50) nav.classList.add('scrolled');
+    else nav.classList.remove('scrolled');
+};
+// Auto-dismiss alerts
+setTimeout(()=>{document.querySelectorAll('.alert').forEach(a=>{a.style.transform='translateX(100%)';a.style.opacity='0';setTimeout(()=>a.remove(),500);})},5000);
+</script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

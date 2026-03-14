@@ -1,0 +1,141 @@
+{% extends "dashboard_base.html" %}
+{% block title %}Visual Archive - MONTFORT SCHOOL{% endblock %}
+{% block extra_css %}
+<style>
+.management-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 2rem;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+}
+.gallery-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 1.5rem;
+}
+.gallery-card {
+    background: #fff;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border);
+    transition: all 0.3s ease;
+    cursor: default;
+}
+.gallery-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-md);
+    border-color: var(--primary-light);
+}
+.gallery-img-wrap {
+    height: 180px;
+    position: relative;
+    overflow: hidden;
+    background: #f1f5f9;
+}
+.gallery-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+}
+.gallery-card:hover .gallery-img {
+    transform: scale(1.08);
+}
+.gallery-info {
+    padding: 1rem;
+}
+.gallery-title {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 8px;
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+.gal-cat-badge {
+    padding: 2px 8px;
+    border-radius: 6px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    background: var(--bg);
+    color: var(--primary);
+    border: 1px solid var(--border);
+}
+</style>
+{% endblock %}
+{% block content %}
+<div class="management-header">
+  <div>
+    <h1 style="font-size: 1.75rem; font-weight: 800; color: var(--text); letter-spacing: -0.5px;">Visual Inventory</h1>
+    <p style="color: var(--muted); font-size: 0.9rem; font-weight: 500;">Manage the campus media library, organize photos by category, and update the public gallery.</p>
+  </div>
+  <button onclick="openModal('uploadModal')" class="btn btn-primary" style="height: 48px; padding: 0 24px;">
+    <i class="fas fa-cloud-upload-alt"></i> Upload Media
+  </button>
+</div>
+
+<div class="gallery-grid">
+  {% for item in items %}
+  <div class="gallery-card">
+    <div class="gallery-img-wrap">
+      <img src="{{ url_for('uploaded_file', filename=item.file_path) }}" class="gallery-img" alt="{{ item.title }}">
+    </div>
+    <div class="gallery-info">
+      <h3 class="gallery-title">{{ item.title or 'Unnamed Asset' }}</h3>
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <span class="gal-cat-badge">{{ item.category }}</span>
+        <form id="del-gal-{{ item.id }}" method="POST" action="{{ url_for('admin_delete_gallery', gid=item.id) }}">
+          <button type="button" class="nav-tool logout" onclick="confirmDelete('del-gal-{{ item.id }}','Delete this visual asset permanently?')" title="Delete from Gallery">
+            <i class="fas fa-trash-alt" style="font-size: 0.8rem;"></i>
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+  {% else %}
+  <div style="grid-column: 1/-1; text-align: center; padding: 6rem 2rem;">
+    <i class="fas fa-photo-video" style="font-size: 4rem; color: var(--muted); opacity: 0.2; display: block; margin-bottom: 1.5rem;"></i>
+    <h3 style="font-weight: 800; color: var(--text);">No media assets found</h3>
+    <p style="color: var(--muted);">Start building your school's visual story by uploading photos.</p>
+  </div>
+  {% endfor %}
+</div>
+
+<!-- UPLOAD MODAL -->
+<div class="modal-overlay" id="uploadModal" onclick="if(event.target==this) closeModal('uploadModal')">
+  <div class="modal" style="border-radius: 24px; overflow: hidden; max-width: 500px;">
+    <div class="modal-header" style="background: var(--primary); color: #fff; padding: 1.5rem 2rem;">
+      <h3 style="color: #fff; margin: 0; font-size: 1.25rem;"><i class="fas fa-image"></i> Media Intake</h3>
+      <button class="modal-close" onclick="closeModal('uploadModal')" style="color: #fff; opacity: 0.8;">&times;</button>
+    </div>
+    <div class="modal-body" style="padding: 2.5rem 2rem;">
+      <form method="POST" action="{{ url_for('admin_upload_gallery') }}" enctype="multipart/form-data">
+        <div class="form-group" style="margin-bottom: 1.25rem;">
+          <label class="form-label">Asset Title</label>
+          <input type="text" name="title" class="form-control" placeholder="Descriptive title" style="border-radius: 12px; height: 48px;">
+        </div>
+        <div class="form-group" style="margin-bottom: 1.25rem;">
+          <label class="form-label">Category *</label>
+          <select name="category" class="form-control" required style="border-radius: 12px; height: 48px; appearance: auto;">
+            <option>General</option><option>Sports</option><option>Events</option><option>Academics</option><option>Cultural</option><option>Infrastructure</option>
+          </select>
+        </div>
+        <div class="form-group" style="margin-bottom: 2rem;">
+          <label class="form-label">Select File *</label>
+          <input type="file" name="file" class="form-control" accept="image/*" required style="border-radius: 12px; height: 48px; padding-top: 10px;">
+        </div>
+        <div style="display: flex; gap: 10px;">
+          <button type="submit" class="btn btn-primary" style="flex: 2; height: 48px; border-radius: 12px;"><i class="fas fa-upload"></i> Execute Upload</button>
+          <button type="button" class="btn btn-outline" onclick="closeModal('uploadModal')" style="flex: 1; height: 48px; border-radius: 12px;">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

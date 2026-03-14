@@ -1,0 +1,91 @@
+{% extends "dashboard_base.html" %}
+{% block title %}Child Details - Parent{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h1><i class="fas fa-user-graduate"></i> {{ student.name if student else 'Student' }} — Details</h1>
+  <a href="{{ url_for('parent_dashboard') }}" class="btn btn-outline"><i class="fas fa-arrow-left"></i> Back</a>
+</div>
+{% if student %}
+<!-- PROFILE BANNER -->
+<div style="background:linear-gradient(135deg,#1a237e,#4a148c);border-radius:14px;padding:2rem;color:#fff;margin-bottom:1.5rem;display:flex;align-items:center;gap:1.5rem;">
+  <div style="width:70px;height:70px;border-radius:50%;background:#ffd740;display:flex;align-items:center;justify-content:center;font-size:1.8rem;font-weight:800;color:#1a237e;">{{ student.name[0] }}</div>
+  <div>
+    <h2 style="font-size:1.3rem;margin-bottom:4px;">{{ student.name }}</h2>
+    <p style="opacity:0.8;">Roll No: {{ student.roll_no }} | {{ student.gender }}</p>
+    <p style="opacity:0.8;">Class: {{ classes_map.get(student.class_id|string,'N/A') }} — {{ student.section }}</p>
+  </div>
+</div>
+<!-- STATS -->
+<div class="stats-grid">
+  <div class="stat-card {{ 'green' if pct >= 75 else 'red' }}">
+    <div class="stat-icon {{ 'ic-green' if pct >= 75 else 'ic-red' }}"><i class="fas fa-clipboard-check"></i></div>
+    <div class="stat-info"><h4>{{ pct }}%</h4><p>Attendance</p></div>
+  </div>
+  {% set paid_fees = fees | selectattr('status','equalto','paid') | list %}
+  {% set pending_fees = fees | selectattr('status','equalto','pending') | list %}
+  <div class="stat-card green"><div class="stat-icon ic-green"><i class="fas fa-check-circle"></i></div><div class="stat-info"><h4>₹{{ paid_fees|sum(attribute='amount')|int }}</h4><p>Fees Paid</p></div></div>
+  <div class="stat-card {{ 'red' if pending_fees else 'green' }}"><div class="stat-icon {{ 'ic-red' if pending_fees else 'ic-green' }}"><i class="fas fa-rupee-sign"></i></div><div class="stat-info"><h4>₹{{ pending_fees|sum(attribute='amount')|int }}</h4><p>Fees Pending</p></div></div>
+  <div class="stat-card blue"><div class="stat-icon ic-blue"><i class="fas fa-file-alt"></i></div><div class="stat-info"><h4>{{ marks|length }}</h4><p>Exams Taken</p></div></div>
+</div>
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;">
+  <!-- ATTENDANCE -->
+  <div class="card">
+    <div class="card-header"><h3><i class="fas fa-clipboard-check"></i> Attendance</h3></div>
+    <div class="card-body">
+      <div style="display:flex;justify-content:space-between;margin-bottom:8px;">
+        <span>Present: {{ present }} days</span><span style="font-weight:700;color:{{ '#2e7d32' if pct >= 75 else '#c62828' }};">{{ pct }}%</span>
+      </div>
+      <div style="background:#f0f0f0;border-radius:20px;height:12px;margin-bottom:1rem;">
+        <div style="background:{{ '#2e7d32' if pct >= 75 else '#c62828' }};border-radius:20px;height:12px;width:{{ pct }}%;"></div>
+      </div>
+      <div class="table-wrap" style="max-height:200px;overflow-y:auto;"><table>
+        <thead><tr><th>Date</th><th>Status</th></tr></thead>
+        <tbody>
+          {% for a in attendance[-10:] | reverse %}
+          <tr><td>{{ a.date }}</td><td><span class="badge badge-{{ 'success' if a.status=='present' else 'danger' }}">{{ a.status }}</span></td></tr>
+          {% else %}<tr><td colspan="2" style="text-align:center;color:#999;">No records</td></tr>{% endfor %}
+        </tbody>
+      </table></div>
+    </div>
+  </div>
+  <!-- MARKS -->
+  <div class="card">
+    <div class="card-header"><h3><i class="fas fa-star"></i> Exam Results</h3></div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Exam</th><th>Subject</th><th>Marks</th><th>Grade</th></tr></thead>
+      <tbody>
+        {% for m in marks %}
+        {% set exam = exams_map.get(m.exam_id|string, {}) %}
+        <tr>
+          <td>{{ exam.name if exam else 'N/A' }}</td>
+          <td>{{ subjects_map.get(exam.subject_id|string,'') if exam else '' }}</td>
+          <td>{{ m.marks_obtained }}/{{ exam.max_marks if exam else 100 }}</td>
+          <td><span class="badge badge-{{ 'success' if m.grade in ['A+','A','B+'] else 'warning' if m.grade in ['B','C'] else 'danger' }}">{{ m.grade }}</span></td>
+        </tr>
+        {% else %}<tr><td colspan="4" style="text-align:center;color:#999;">No results yet</td></tr>{% endfor %}
+      </tbody>
+    </table></div>
+  </div>
+</div>
+
+<!-- FEES -->
+<div class="card" style="margin-top:1.5rem;">
+  <div class="card-header"><h3><i class="fas fa-rupee-sign"></i> Fee Records</h3></div>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Type</th><th>Amount</th><th>Due Date</th><th>Status</th><th>Receipt</th></tr></thead>
+    <tbody>
+      {% for f in fees %}
+      <tr>
+        <td>{{ f.fee_type }}</td><td>₹{{ f.amount }}</td><td>{{ f.due_date }}</td>
+        <td><span class="badge badge-{{ 'success' if f.status=='paid' else 'danger' }}">{{ f.status }}</span></td>
+        <td>{{ f.receipt_no or '-' }}</td>
+      </tr>
+      {% else %}<tr><td colspan="5" style="text-align:center;color:#999;">No fee records</td></tr>{% endfor %}
+    </tbody>
+  </table></div>
+</div>
+{% else %}
+<div class="card"><div class="card-body" style="text-align:center;padding:3rem;color:#999;">Student not found.</div></div>
+{% endif %}
+{% endblock %}

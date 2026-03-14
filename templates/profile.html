@@ -1,0 +1,60 @@
+{% extends "dashboard_base.html" %}
+{% block title %}My Profile{% endblock %}
+{% block content %}
+<div class="page-header"><h1><i class="fas fa-user-cog"></i> My Profile</h1></div>
+<div style="display:grid;grid-template-columns:1fr 2fr;gap:1.5rem;">
+  <!-- AVATAR CARD -->
+  <div class="card" style="text-align:center;">
+    <div class="card-body">
+      <div style="width:90px;height:90px;border-radius:50%;background:linear-gradient(135deg,var(--primary),#4a148c);margin:0 auto 1rem;display:flex;align-items:center;justify-content:center;font-size:2.5rem;color:#fff;font-weight:700;">
+        {{ session.name[0] | upper if session.name else 'U' }}
+      </div>
+      <h2 style="font-size:1.1rem;color:var(--primary);">{{ user.name if user else session.name }}</h2>
+      <p style="color:#888;font-size:0.9rem;">{{ user.username if user else '' }}</p>
+      <span class="badge badge-{{ 'success' if session.role=='admin' else 'info' if session.role=='teacher' else 'primary' if session.role=='student' else 'warning' }}" style="margin-top:8px;padding:6px 16px;font-size:0.85rem;">
+        <i class="fas fa-{{ 'user-shield' if session.role=='admin' else 'chalkboard-teacher' if session.role=='teacher' else 'user-graduate' if session.role=='student' else 'users' }}"></i>
+        {{ session.role | title }}
+      </span>
+      <hr style="margin:1rem 0;">
+      <div style="text-align:left;font-size:0.88rem;line-height:2.2;">
+        <div><i class="fas fa-envelope" style="width:20px;color:var(--primary);"></i> {{ user.email if user else '' }}</div>
+        <div><i class="fas fa-phone" style="width:20px;color:var(--primary);"></i> {{ user.phone if user else '' }}</div>
+        <div><i class="fas fa-circle" style="width:20px;color:{{ '#2e7d32' if user and user.status=='active' else '#c62828' }};font-size:0.6rem;"></i> {{ user.status | title if user else '' }}</div>
+      </div>
+    </div>
+  </div>
+  <!-- EDIT FORM -->
+  <div class="card">
+    <div class="card-header"><h3><i class="fas fa-edit"></i> Edit Profile</h3></div>
+    <div class="card-body">
+      <form method="POST">
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Full Name</label><input type="text" name="name" class="form-control" value="{{ user.name if user else '' }}" required></div>
+          <div class="form-group"><label class="form-label">Email</label><input type="email" name="email" class="form-control" value="{{ user.email if user else '' }}"></div>
+          <div class="form-group"><label class="form-label">Phone</label><input type="tel" name="phone" class="form-control" value="{{ user.phone if user else '' }}"></div>
+        </div>
+        <hr style="margin:1.5rem 0;border-color:#f0f0f0;">
+        <h4 style="color:var(--primary);margin-bottom:1rem;font-size:0.95rem;"><i class="fas fa-lock"></i> Change Password</h4>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Current Password</label><input type="password" name="current_password" class="form-control" placeholder="Enter current password"></div>
+          <div class="form-group"><label class="form-label">New Password</label><input type="password" name="new_password" class="form-control" placeholder="Enter new password"></div>
+          <div class="form-group"><label class="form-label">Confirm Password</label><input type="password" id="confirmPwd" class="form-control" placeholder="Confirm new password"></div>
+        </div>
+        <div style="display:flex;gap:10px;margin-top:1rem;">
+          <button type="submit" class="btn btn-primary btn-lg"><i class="fas fa-save"></i> Save Changes</button>
+          <button type="reset" class="btn btn-outline btn-lg">Reset</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+document.querySelector('form').addEventListener('submit',function(e){
+  const np = document.querySelector('input[name=new_password]').value;
+  const cp = document.getElementById('confirmPwd').value;
+  if(np && np !== cp){e.preventDefault();alert('New passwords do not match!');}
+});
+</script>
+{% endblock %}

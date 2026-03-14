@@ -1,0 +1,52 @@
+{% extends "dashboard_base.html" %}
+{% block title %}Assignments - Student{% endblock %}
+{% block content %}
+<div class="page-header"><h1><i class="fas fa-tasks"></i> Assignments</h1></div>
+<div class="card">
+  <div class="table-wrap"><table>
+    <thead><tr><th>#</th><th>Title</th><th>Subject</th><th>Description</th><th>Due Date</th><th>Attachment</th><th>Status</th><th>Submit</th></tr></thead>
+    <tbody>
+      {% for a in assignments | reverse %}
+      {% set submitted = a.id|string in submitted_ids %}
+      <tr>
+        <td>{{ loop.index }}</td>
+        <td><strong>{{ a.title }}</strong></td>
+        <td>{{ subjects_map.get(a.subject_id|string,'N/A') }}</td>
+        <td style="max-width:200px;font-size:0.85rem;color:#666;">{{ a.description[:80] if a.description else '-' }}</td>
+        <td>{{ a.due_date }}</td>
+        <td>{% if a.file_path %}<a href="{{ url_for('uploaded_file', filename=a.file_path) }}" class="btn btn-sm btn-outline" target="_blank"><i class="fas fa-download"></i></a>{% else %}-{% endif %}</td>
+        <td>
+          {% if submitted %}<span class="badge badge-success"><i class="fas fa-check"></i> Submitted</span>
+          {% else %}<span class="badge badge-warning">Pending</span>{% endif %}
+        </td>
+        <td>
+          {% if not submitted %}
+          <button onclick="openSubmitModal({{ a.id }},'{{ a.title }}')" class="btn btn-sm btn-primary"><i class="fas fa-upload"></i> Submit</button>
+          {% endif %}
+        </td>
+      </tr>
+      {% else %}<tr><td colspan="8" style="text-align:center;color:#999;padding:2rem;">No assignments currently.</td></tr>{% endfor %}
+    </tbody>
+  </table></div>
+</div>
+<!-- SUBMIT MODAL -->
+<div class="modal-overlay" id="submitModal">
+  <div class="modal"><div class="modal-header"><h3><i class="fas fa-upload"></i> Submit Assignment</h3><button class="modal-close" onclick="closeModal('submitModal')">×</button></div>
+  <div class="modal-body">
+    <p id="submitTitle" style="color:#666;margin-bottom:1rem;font-weight:600;"></p>
+    <form id="submitForm" method="POST" enctype="multipart/form-data">
+      <div class="form-group"><label class="form-label">Upload Your Work *</label><input type="file" name="file" class="form-control" required></div>
+      <button type="submit" class="btn btn-primary"><i class="fas fa-upload"></i> Submit Assignment</button>
+    </form>
+  </div></div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+function openSubmitModal(id, title){
+  document.getElementById('submitTitle').textContent = 'Assignment: ' + title;
+  document.getElementById('submitForm').action = '/student/assignments/submit/' + id;
+  openModal('submitModal');
+}
+</script>
+{% endblock %}

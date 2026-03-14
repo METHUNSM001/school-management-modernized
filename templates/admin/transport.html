@@ -1,0 +1,208 @@
+{% extends "dashboard_base.html" %}
+{% block title %}Logistics & Transport - MONTFORT SCHOOL{% endblock %}
+{% block extra_css %}
+<style>
+.management-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 2rem;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+}
+.transport-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 2rem;
+}
+.route-card {
+    background: #fff;
+    border-radius: 24px;
+    padding: 1.75rem;
+    box-shadow: var(--shadow-md);
+    border: 1px solid var(--border);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+.route-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-lg);
+    border-color: var(--primary-light);
+}
+.route-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 6px;
+    height: 100%;
+    background: var(--primary);
+}
+.route-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1.5rem;
+}
+.route-name {
+    font-size: 1.2rem;
+    font-weight: 800;
+    color: var(--text);
+    margin: 0;
+}
+.vehicle-badge {
+    background: #f1f5f9;
+    color: #475569;
+    padding: 4px 10px;
+    border-radius: 8px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    border: 1px solid #e2e8f0;
+}
+.driver-info {
+    background: var(--bg);
+    border-radius: 16px;
+    padding: 1.25rem;
+    margin-bottom: 1.5rem;
+}
+.info-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 8px;
+    font-size: 0.9rem;
+}
+.info-item:last-child { margin-bottom: 0; }
+.info-item i {
+    width: 32px;
+    height: 32px;
+    background: #fff;
+    color: var(--primary);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.9rem;
+    box-shadow: var(--shadow-sm);
+}
+
+.stops-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+.stop-pill {
+    padding: 4px 10px;
+    background: #eef2ff;
+    color: #4338ca;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+</style>
+{% endblock %}
+{% block content %}
+<div class="management-header">
+  <div>
+    <h1 style="font-size: 1.75rem; font-weight: 800; color: var(--text); letter-spacing: -0.5px;">Transport & Logistics</h1>
+    <p style="color: var(--muted); font-size: 0.9rem; font-weight: 500;">Manage school bus routes, vehicle assignments, and driver contact info.</p>
+  </div>
+  <button onclick="openModal('addRouteModal')" class="btn btn-primary" style="height: 48px; padding: 0 24px;">
+    <i class="fas fa-plus-circle"></i> Create Route
+  </button>
+</div>
+
+<div class="transport-grid">
+  {% for r in routes %}
+  <div class="route-card">
+    <div class="route-header">
+      <div>
+        <h3 class="route-name">{{ r.route_name }}</h3>
+        <span class="vehicle-badge"><i class="fas fa-bus-alt"></i> {{ r.vehicle_no }}</span>
+      </div>
+      <form id="del-rt-{{ r.id }}" method="POST" action="{{ url_for('admin_delete_transport', tid=r.id) }}">
+        <button type="button" class="nav-tool logout" onclick="confirmDelete('del-rt-{{ r.id }}','Permanently decommission this transport route?')" title="Delete Route">
+          <i class="fas fa-trash-alt"></i>
+        </button>
+      </form>
+    </div>
+
+    <div class="driver-info">
+        <div class="info-item">
+            <i class="fas fa-user-tie"></i>
+            <div>
+                <div style="font-size: 0.7rem; text-transform: uppercase; color: var(--muted); font-weight: 700;">Authorized Driver</div>
+                <div style="font-weight: 700; color: var(--text);">{{ r.driver_name }}</div>
+            </div>
+        </div>
+        <div class="info-item">
+            <i class="fas fa-phone-alt"></i>
+            <div>
+                <div style="font-size: 0.7rem; text-transform: uppercase; color: var(--muted); font-weight: 700;">Emergency Contact</div>
+                <div style="font-weight: 700; color: var(--text);">{{ r.driver_phone }}</div>
+            </div>
+        </div>
+    </div>
+
+    <div>
+        <div style="font-size: 0.8rem; font-weight: 700; color: var(--text); margin-bottom: 10px;"><i class="fas fa-map-marked-alt" style="color: var(--secondary);"></i> Designated Stops</div>
+        <div class="stops-container">
+            {% for stop in r.stops.split(',') %}
+            <span class="stop-pill">{{ stop.strip() }}</span>
+            {% endfor %}
+        </div>
+    </div>
+  </div>
+  {% else %}
+  <div style="grid-column: 1/-1; text-align: center; padding: 5rem 2rem;">
+    <i class="fas fa-bus" style="font-size: 4rem; color: var(--muted); opacity: 0.2; display: block; margin-bottom: 1.5rem;"></i>
+    <h3 style="font-weight: 800; color: var(--text);">No routes established</h3>
+    <p style="color: var(--muted);">Establishing transport routes helps manage student logistics effectively.</p>
+  </div>
+  {% endfor %}
+</div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="addRouteModal" onclick="if(event.target==this) closeModal('addRouteModal')">
+  <div class="modal" style="border-radius: 24px; overflow: hidden; max-width: 550px;">
+    <div class="modal-header" style="background: var(--primary); color: #fff; padding: 1.5rem 2rem;">
+      <h3 style="color: #fff; margin: 0; font-size: 1.25rem;"><i class="fas fa-route"></i> Define New Route</h3>
+      <button class="modal-close" onclick="closeModal('addRouteModal')" style="color: #fff; opacity: 0.8;">&times;</button>
+    </div>
+    <div class="modal-body" style="padding: 2.5rem 2rem;">
+      <form method="POST" action="{{ url_for('admin_add_transport') }}">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.25rem;">
+          <div class="form-group">
+            <label class="form-label">Route Title *</label>
+            <input type="text" name="route_name" class="form-control" required placeholder="e.g. South Campus Express" style="border-radius: 12px; height: 48px;">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Vehicle Registration *</label>
+            <input type="text" name="vehicle_no" class="form-control" required placeholder="TN-01-BK-9999" style="border-radius: 12px; height: 48px;">
+          </div>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.25rem;">
+          <div class="form-group">
+            <label class="form-label">Driver Full Name *</label>
+            <input type="text" name="driver_name" class="form-control" required style="border-radius: 12px; height: 48px;">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Mobile Number *</label>
+            <input type="tel" name="driver_phone" class="form-control" required style="border-radius: 12px; height: 48px;">
+          </div>
+        </div>
+        <div class="form-group" style="margin-bottom: 2rem;">
+          <label class="form-label">Sequential Stops</label>
+          <input type="text" name="stops" class="form-control" placeholder="Point A, Point B, Point C..." style="border-radius: 12px; height: 48px;">
+          <small style="color: var(--muted); margin-top: 8px; display: block;">Separate multiple locations with commas.</small>
+        </div>
+        <div style="display: flex; gap: 10px;">
+          <button type="submit" class="btn btn-primary" style="flex: 2; height: 48px; border-radius: 12px;"><i class="fas fa-save"></i> Save Route</button>
+          <button type="button" class="btn btn-outline" onclick="closeModal('addRouteModal')" style="flex: 1; height: 48px; border-radius: 12px;">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

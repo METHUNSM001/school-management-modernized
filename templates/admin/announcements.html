@@ -1,0 +1,139 @@
+{% extends "dashboard_base.html" %}
+{% block title %}Institutional Announcements - MONTFORT SCHOOL{% endblock %}
+{% block extra_css %}
+<style>
+.management-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 2rem;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+}
+.target-badge {
+    padding: 4px 12px;
+    border-radius: 8px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+.target-all { background: #e0f2fe; color: #0369a1; }
+.target-student { background: #d1fae5; color: #065f46; }
+.target-teacher { background: #fef3c7; color: #92400e; }
+.target-parent { background: #fee2e2; color: #991b1b; }
+
+.ann-title {
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 2px;
+}
+.ann-meta {
+    font-size: 0.75rem;
+    color: var(--muted);
+    font-weight: 600;
+}
+</style>
+{% endblock %}
+{% block content %}
+<div class="management-header">
+  <div>
+    <h1 style="font-size: 1.75rem; font-weight: 800; color: var(--text); letter-spacing: -0.5px;">Campus Broadcasts</h1>
+    <p style="color: var(--muted); font-size: 0.9rem; font-weight: 500;">Publish official announcements and news to the school community.</p>
+  </div>
+  <button onclick="openModal('addAnnModal')" class="btn btn-primary" style="height: 48px; padding: 0 24px;">
+    <i class="fas fa-bullhorn"></i> New Announcement
+  </button>
+</div>
+
+<div class="card" style="border-radius: 20px; border: none; box-shadow: var(--shadow-md);">
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th style="padding-left: 24px;">#</th>
+          <th>Broadcast Details</th>
+          <th>Message Content</th>
+          <th>Target Audience</th>
+          <th>Published Date</th>
+          <th style="padding-right: 24px; text-align: right;">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for a in announcements | reverse %}
+        <tr>
+          <td style="padding-left: 24px; color: var(--muted); font-weight: 700;">{{ loop.index }}</td>
+          <td>
+            <div class="ann-title">{{ a.title }}</div>
+          </td>
+          <td style="max-width:350px;">
+            <div style="font-size: 0.85rem; color: var(--muted); line-height: 1.4;">
+                {{ a.content[:100] }}{% if a.content|length>100 %}...{% endif %}
+            </div>
+          </td>
+          <td>
+            <span class="target-badge target-{{ a.target_role }}">
+                <i class="fas {{ 'fa-users' if a.target_role=='all' else 'fa-user-graduate' if a.target_role=='student' else 'fa-chalkboard-teacher' if a.target_role=='teacher' else 'fa-user-friends' }}"></i>
+                {{ a.target_role | title }}
+            </span>
+          </td>
+          <td>
+            <div class="ann-meta">{{ a.created_at[:10] if a.created_at else 'Unknown' }}</div>
+          </td>
+          <td style="padding-right: 24px; text-align: right;">
+            <div style="display: flex; gap: 8px; justify-content: flex-end;">
+              <form id="del-ann-{{ a.id }}" method="POST" action="{{ url_for('admin_delete_announcement', aid=a.id) }}" style="display: inline;">
+                <button type="button" class="nav-tool logout" onclick="confirmDelete('del-ann-{{ a.id }}','Permanently remove this announcement for everyone?')" title="Delete Announcement"><i class="fas fa-trash-alt"></i></button>
+              </form>
+            </div>
+          </td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="6" style="text-align: center; padding: 5rem 2rem;">
+            <i class="fas fa-bullhorn" style="font-size: 3rem; color: var(--muted); opacity: 0.2; display: block; margin-bottom: 1.5rem;"></i>
+            <h3 style="font-weight: 700; color: var(--text);">No announcements yet</h3>
+            <p style="color: var(--muted);">Click the button above to broadcast your first message.</p>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="addAnnModal" onclick="if(event.target==this) closeModal('addAnnModal')">
+  <div class="modal" style="border-radius: 24px; overflow: hidden; max-width: 550px;">
+    <div class="modal-header" style="background: var(--primary); color: #fff; padding: 1.5rem 2rem;">
+      <h3 style="color: #fff; margin: 0; font-size: 1.25rem;"><i class="fas fa-plus-circle"></i> Create Announcement</h3>
+      <button class="modal-close" onclick="closeModal('addAnnModal')" style="color: #fff; opacity: 0.8;">&times;</button>
+    </div>
+    <div class="modal-body" style="padding: 2.5rem 2rem;">
+      <form method="POST" action="{{ url_for('admin_add_announcement') }}">
+        <div class="form-group" style="margin-bottom: 1.25rem;">
+          <label class="form-label">Broadcast Title *</label>
+          <input type="text" name="title" class="form-control" required placeholder="e.g. Important Update: School Reopening" style="border-radius: 12px; height: 48px;">
+        </div>
+        <div class="form-group" style="margin-bottom: 1.25rem;">
+          <label class="form-label">Detailed Content *</label>
+          <textarea name="content" class="form-control" rows="5" required placeholder="Type the full message here..." style="border-radius: 12px; padding: 15px; resize: none;"></textarea>
+        </div>
+        <div class="form-group" style="margin-bottom: 2rem;">
+          <label class="form-label">Target Audience</label>
+          <select name="target_role" class="form-control" style="border-radius: 12px; height: 48px; appearance: auto;">
+            <option value="all">Everyone (General Broadcast)</option>
+            <option value="student">Students Community</option>
+            <option value="teacher">Faculty & Staff</option>
+            <option value="parent">Parent Association</option>
+          </select>
+        </div>
+        <div style="display: flex; gap: 10px;">
+          <button type="submit" class="btn btn-primary" style="flex: 2; height: 48px; border-radius: 12px;"><i class="fas fa-paper-plane"></i> Publish Now</button>
+          <button type="button" class="btn btn-outline" onclick="closeModal('addAnnModal')" style="flex: 1; height: 48px; border-radius: 12px;">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

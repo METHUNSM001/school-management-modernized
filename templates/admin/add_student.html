@@ -1,0 +1,97 @@
+{% extends "dashboard_base.html" %}
+{% block title %}{{ 'Edit' if edit else 'Add' }} Student - Admin{% endblock %}
+{% block extra_css %}
+<style>
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+}
+@media (max-width: 991px) {
+    .form-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+@media (max-width: 600px) {
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+}
+.form-section-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--primary);
+    margin: 2rem 0 1rem;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.form-section-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+}
+</style>
+{% endblock %}
+{% block content %}
+<div class="page-header" style="margin-bottom: 2rem;">
+  <div>
+    <h1 style="font-size: 1.75rem; font-weight: 800; color: var(--text); letter-spacing: -0.5px;">{{ 'Edit' if edit else 'Register' }} Student</h1>
+    <p style="color: var(--muted); font-size: 0.9rem; font-weight: 500;">Fill in the student details to {{ 'update their' if edit else 'create a new' }} profile.</p>
+  </div>
+  <a href="{{ url_for('admin_students') }}" class="btn btn-outline"><i class="fas fa-arrow-left"></i> Back to List</a>
+</div>
+
+<div class="card" style="border-radius: 20px;">
+  <div class="card-body" style="padding: 2.5rem;">
+    <form method="POST">
+      <div class="form-section-title" style="margin-top: 0;"><i class="fas fa-user-circle"></i> Personal Details</div>
+      <div class="form-grid">
+        <div class="form-group"><label class="form-label">Full Name *</label><input type="text" name="name" class="form-control" value="{{ student.name if student else '' }}" required placeholder="e.g. John Doe"></div>
+        <div class="form-group"><label class="form-label">Roll Number *</label><input type="text" name="roll_no" class="form-control" value="{{ student.roll_no if student else '' }}" required placeholder="e.g. 10A001"></div>
+        <div class="form-group"><label class="form-label">Class *</label>
+          <select name="class_id" class="form-control" required style="appearance: auto;">
+            <option value="">Select Class</option>
+            {% for c in ['PRE-KG','LKG','UKG','Class 1','Class 2','Class 3','Class 4','Class 5','Class 6','Class 7','Class 8','Class 9','Class 10','Class 11 - BIO/MATHS','Class 11 - BIO/CS','Class 11 - MATHS/CS','Class 11 - ARTS','Class 12 - BIO/MATHS','Class 12 - BIO/CS','Class 12 - MATHS/CS','Class 12 - ARTS'] %}
+            <option value="{{ c }}" {{ 'selected' if student and student.class_id|string==c else '' }}>{{ c }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="form-group"><label class="form-label">Section</label><input type="text" name="section" class="form-control" value="{{ student.section if student else '' }}" placeholder="e.g. A"></div>
+        <div class="form-group"><label class="form-label">Date of Birth</label><input type="date" name="dob" class="form-control" value="{{ student.dob if student else '' }}"></div>
+        <div class="form-group"><label class="form-label">Gender</label>
+          <select name="gender" class="form-control" style="appearance: auto;">
+            <option value="">Select</option>
+            {% for g in ['Male','Female','Other'] %}<option {{ 'selected' if student and student.gender==g else '' }}>{{ g }}</option>{% endfor %}
+          </select>
+        </div>
+        <div class="form-group" style="grid-column: 1 / -1;"><label class="form-label">Full Address</label><textarea name="address" class="form-control" rows="2" placeholder="Complete residential address">{{ student.address if student else '' }}</textarea></div>
+      </div>
+
+      <div class="form-section-title"><i class="fas fa-key"></i> Account Access</div>
+      <div class="form-grid">
+        {% if not edit %}
+        <div class="form-group"><label class="form-label">Username *</label><input type="text" name="username" class="form-control" required placeholder="Desired username"></div>
+        <div class="form-group"><label class="form-label">Initial Password</label><input type="password" name="password" class="form-control" placeholder="Default: student123"></div>
+        <div class="form-group"><label class="form-label">Admission Date</label><input type="date" name="admission_date" class="form-control" value="{{ now.strftime('%Y-%m-%d') if not student else '' }}"></div>
+        {% else %}
+        <div class="form-group" style="grid-column: 1 / -1; color: var(--muted); font-size: 0.85rem;">Account settings can be managed via the profile section.</div>
+        {% endif %}
+      </div>
+
+      <div class="form-section-title"><i class="fas fa-users-viewfinder"></i> Guardian Information</div>
+      <div class="form-grid">
+        <div class="form-group"><label class="form-label">Parent/Guardian Name *</label><input type="text" name="parent_name" class="form-control" value="{{ student.parent_name if student else '' }}" required placeholder="Father/Mother Name"></div>
+        <div class="form-group"><label class="form-label">Contact Number *</label><input type="tel" name="parent_phone" class="form-control" value="{{ student.parent_phone if student else '' }}" required placeholder="Primary mobile number"></div>
+        <div class="form-group"><label class="form-label">Email Address</label><input type="email" name="parent_email" class="form-control" value="{{ student.parent_email if student else '' }}" placeholder="guardian@email.com"></div>
+      </div>
+
+      <div style="display:flex; gap: 1rem; margin-top: 3rem; pt: 1rem; border-top: 1px solid var(--border); padding-top: 2rem;">
+        <button type="submit" class="btn btn-primary btn-lg" style="padding: 12px 30px;"><i class="fas fa-check-circle"></i> {{ 'Save Changes' if edit else 'Create Student Account' }}</button>
+        <a href="{{ url_for('admin_students') }}" class="btn btn-outline btn-lg" style="padding: 12px 30px;">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

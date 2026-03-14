@@ -1,0 +1,122 @@
+{% extends "dashboard_base.html" %}
+{% block title %}Communications - MONTFORT SCHOOL{% endblock %}
+{% block extra_css %}
+<style>
+.management-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 2rem;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+}
+.messages-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+.message-card {
+    background: #fff;
+    border-radius: 20px;
+    padding: 1.5rem;
+    border: 1px solid var(--border);
+    transition: all 0.3s ease;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 1.5rem;
+    align-items: start;
+}
+.message-card:hover {
+    box-shadow: var(--shadow-md);
+    border-color: var(--primary-light);
+}
+.msg-icon {
+    width: 48px;
+    height: 48px;
+    background: var(--primary-glow);
+    color: var(--primary);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+}
+.msg-main { min-width: 0; }
+.msg-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 0.75rem;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+.msg-sender { font-weight: 800; color: var(--text); font-size: 1.05rem; }
+.msg-date { font-size: 0.8rem; color: var(--muted); font-weight: 600; }
+.msg-subject { font-weight: 700; color: var(--secondary); margin-bottom: 0.5rem; display: block; }
+.msg-text { color: var(--muted); line-height: 1.6; font-size: 0.92rem; }
+.msg-contact-info {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1rem;
+    font-size: 0.85rem;
+    color: var(--text);
+    font-weight: 600;
+}
+.msg-contact-info i { color: var(--primary); }
+
+@media (max-width: 768px) {
+    .message-card {
+        grid-template-columns: 1fr;
+        padding: 1.25rem;
+    }
+    .msg-icon { display: none; }
+    .msg-actions { text-align: right; margin-top: 1rem; }
+}
+</style>
+{% endblock %}
+{% block content %}
+<div class="management-header">
+  <div>
+    <h1 style="font-size: 1.75rem; font-weight: 800; color: var(--text); letter-spacing: -0.5px;">Inbox & Enquiries</h1>
+    <p style="color: var(--muted); font-size: 0.9rem; font-weight: 500;">Direct communications from the public and prospective families.</p>
+  </div>
+</div>
+
+<div class="messages-list">
+  {% for m in messages | reverse %}
+  <div class="message-card">
+    <div class="msg-icon">
+      <i class="fas fa-paper-plane"></i>
+    </div>
+    <div class="msg-main">
+      <div class="msg-header">
+        <span class="msg-sender">{{ m.name }}</span>
+        <span class="msg-date">{{ m.received_at[:16] if m.received_at else 'Recently' }}</span>
+      </div>
+      <span class="msg-subject">{{ m.subject }}</span>
+      <p class="msg-text">{{ m.message }}</p>
+      
+      <div class="msg-contact-info">
+        <span><i class="fas fa-envelope"></i> {{ m.email }}</span>
+        {% if m.phone %}
+        <span><i class="fas fa-phone-alt"></i> {{ m.phone }}</span>
+        {% endif %}
+      </div>
+    </div>
+    <div class="msg-actions">
+      <form id="del-msg-{{ m.id }}" method="POST" action="{{ url_for('admin_delete_message', mid=m.id) }}">
+        <button type="button" class="nav-tool logout" onclick="confirmDelete('del-msg-{{ m.id }}','Permanently discard this communication?')" title="Delete Message">
+          <i class="fas fa-trash-alt"></i>
+        </button>
+      </form>
+    </div>
+  </div>
+  {% else %}
+  <div style="text-align: center; padding: 6rem 2rem;">
+    <i class="fas fa-inbox" style="font-size: 4rem; color: var(--muted); opacity: 0.15; display: block; margin-bottom: 1.5rem;"></i>
+    <h3 style="font-weight: 800; color: var(--text);">No messages yet</h3>
+    <p style="color: var(--muted);">When people contact you through the website, their messages will appear here.</p>
+  </div>
+  {% endfor %}
+</div>
+{% endblock %}

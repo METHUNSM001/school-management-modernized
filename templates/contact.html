@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+{% block title %}Contact Us - MONTFORT SENIOR SECONDARY SCHOOL{% endblock %}
+{% block content %}
+<!-- HERO SECTION -->
+<section style="background: linear-gradient(135deg, #064e3b 0%, #065f46 100%); color: #fff; padding: 100px 0; position: relative; overflow: hidden;">
+    <div style="position: absolute; top: -50px; right: -50px; width: 250px; height: 250px; background: white; opacity: 0.1; filter: blur(80px); border-radius: 50%;"></div>
+    <div class="container" style="max-width: 900px; text-align: center; position: relative; z-index: 10;">
+        <h1 style="font-size: clamp(2.5rem, 6vw, 4rem); font-weight: 800; letter-spacing: -1.5px; line-height: 1.1; margin-bottom: 1.5rem;">Get in <span style="color: var(--accent);">Touch</span></h1>
+        <p style="font-size: 1.1rem; opacity: 0.9; font-weight: 500; max-width: 600px; margin: 0 auto;">We're here to answer your questions and welcome you to our campus.</p>
+    </div>
+</section>
+
+<section style="padding: 80px 0;">
+    <div class="container" style="max-width: 1200px; padding: 0 1.5rem;">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% for cat,msg in messages %}
+        <div style="margin-bottom: 2rem; padding: 1.25rem 2rem; border-radius: 20px; border-left: 6px solid {{ '#10b981' if cat=='success' else '#ef4444' }}; background: {{ '#f0fdf4' if cat=='success' else '#fef2f2' }}; color: {{ '#065f46' if cat=='success' else '#991b1b' }}; box-shadow: var(--shadow-sm); display: flex; align-items: center; gap: 1rem;">
+            <i class="fas fa-{{ 'check-circle' if cat=='success' else 'exclamation-circle' }}" style="font-size: 1.25rem;"></i>
+            <span style="font-weight: 600;">{{ msg }}</span>
+        </div>
+        {% endfor %}{% endwith %}
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 3rem;">
+            <!-- CONTACT DETAILS -->
+            <div style="display: flex; flex-direction: column; gap: 2rem;">
+                <div style="background: var(--card); border: 1px solid var(--border); border-radius: 32px; padding: 3rem; box-shadow: var(--shadow-md);">
+                    <h3 style="font-size: 1.5rem; font-weight: 800; color: var(--text); margin-bottom: 2.5rem;">Contact Details</h3>
+                    
+                    <div style="display: flex; flex-direction: column; gap: 2rem;">
+                        <div style="display: flex; gap: 1.25rem;">
+                            <div style="width: 48px; height: 48px; background: #eff6ff; color: var(--primary); border-radius: 14px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 1.25rem;">
+                                <i class="fas fa-map-marker-alt"></i>
+                            </div>
+                            <div>
+                                <h4 style="font-size: 0.9rem; font-weight: 700; color: var(--text); margin-bottom: 0.25rem;">Our Location</h4>
+                                <p style="color: var(--muted); line-height: 1.5; font-size: 0.95rem;">SH-82, Athani Main Road, Dasappagounden Pudur, Erode, TN 638503</p>
+                            </div>
+                        </div>
+
+                        <div style="display: flex; gap: 1.25rem;">
+                            <div style="width: 48px; height: 48px; background: #f0fdf4; color: var(--success); border-radius: 14px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 1.25rem;">
+                                <i class="fas fa-phone-alt"></i>
+                            </div>
+                            <div>
+                                <h4 style="font-size: 0.9rem; font-weight: 700; color: var(--text); margin-bottom: 0.25rem;">Call Us</h4>
+                                <p style="color: var(--muted); line-height: 1.5; font-size: 0.95rem;">+91 9566662533<br>04285-233344</p>
+                            </div>
+                        </div>
+
+                        <div style="display: flex; gap: 1.25rem;">
+                            <div style="width: 48px; height: 48px; background: #fffbe6; color: #d97706; border-radius: 14px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 1.25rem;">
+                                <i class="fas fa-envelope"></i>
+                            </div>
+                            <div>
+                                <h4 style="font-size: 0.9rem; font-weight: 700; color: var(--text); margin-bottom: 0.25rem;">Email Us</h4>
+                                <p style="color: var(--muted); line-height: 1.5; font-size: 0.95rem;">montfortdgpudur@gmail.com</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 3rem; padding-top: 2rem; border-top: 1px solid #f1f5f9;">
+                        <h4 style="font-size: 1rem; font-weight: 800; color: var(--text); margin-bottom: 1rem;">Office Hours</h4>
+                        <p style="color: var(--muted); font-size: 0.95rem;">Monday – Saturday<br><strong>8:30 AM – 4:30 PM</strong></p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CONTACT FORM -->
+            <div style="background: var(--card); border: 1px solid var(--border); border-radius: 32px; padding: 3rem; box-shadow: var(--shadow-xl);">
+                <h3 style="font-size: 1.75rem; font-weight: 800; color: var(--text); margin-bottom: 2.5rem;">Send a Message</h3>
+                <form method="POST" style="display: flex; flex-direction: column; gap: 1.5rem;">
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem;">
+                        <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                            <label style="font-size: 0.9rem; font-weight: 600; color: var(--text);">Your Name *</label>
+                            <input type="text" name="name" required style="padding: 1rem 1.25rem; border-radius: 16px; border: 1px solid #e2e8f0; background: #f8fafc; font-family: inherit; font-size: 0.95rem; outline: none;">
+                        </div>
+                        <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                            <label style="font-size: 0.9rem; font-weight: 600; color: var(--text);">Email Address *</label>
+                            <input type="email" name="email" required style="padding: 1rem 1.25rem; border-radius: 16px; border: 1px solid #e2e8f0; background: #f8fafc; font-family: inherit; font-size: 0.95rem; outline: none;">
+                        </div>
+                    </div>
+                    
+                    <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                        <label style="font-size: 0.9rem; font-weight: 600; color: var(--text);">Subject *</label>
+                        <select name="subject" required style="padding: 1rem 1.25rem; border-radius: 16px; border: 1px solid #e2e8f0; background: #f8fafc; font-family: inherit; outline: none; appearance: none; background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23666%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E'); background-repeat: no-repeat; background-position: right 1rem center; background-size: 0.65rem auto;">
+                            <option>General Enquiry</option>
+                            <option>Admissions</option>
+                            <option>Fee Query</option>
+                            <option>Academic Query</option>
+                        </select>
+                    </div>
+
+                    <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                        <label style="font-size: 0.9rem; font-weight: 600; color: var(--text);">Message *</label>
+                        <textarea name="message" required rows="5" style="padding: 1rem 1.25rem; border-radius: 16px; border: 1px solid #e2e8f0; background: #f8fafc; font-family: inherit; font-size: 0.95rem; outline: none; resize: none;"></textarea>
+                    </div>
+
+                    <button type="submit" style="background: linear-gradient(to right, #059669, #10b981); color: white; padding: 1.25rem; border-radius: 16px; border: none; font-size: 1.1rem; font-weight: 700; cursor: pointer; transition: all 0.3s; box-shadow: 0 10px 20px rgba(16,185,129,0.2); margin-top: 1rem;">
+                        Send Message <i class="fas fa-paper-plane" style="margin-left: 8px;"></i>
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- MAP SECTION -->
+        <div style="margin-top: 4rem; background: #fff; border: 1px solid var(--border); border-radius: 40px; overflow: hidden; height: 500px; position: relative; box-shadow: var(--shadow-lg);">
+             <div style="position: absolute; top: 30px; left: 30px; z-index: 10; background: white; padding: 2rem; border-radius: 24px; box-shadow: var(--shadow-lg); max-width: 300px;">
+                 <h4 style="font-weight: 800; color: var(--primary); margin-bottom: 0.5rem;">Visit Our Campus</h4>
+                 <p style="font-size: 0.85rem; color: var(--muted); margin-bottom: 1.5rem;">Explore our environment-friendly campus in Erode.</p>
+                 <a href="https://maps.google.com/?q=Montfort+CBSE+School+DG+Pudur+Erode" target="_blank" style="display: block; text-align: center; background: var(--primary); color: white; padding: 0.75rem; border-radius: 12px; text-decoration: none; font-weight: 700; font-size: 0.9rem;">Open in Maps</a>
+             </div>
+             <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3420.73!2d77.3!3d11.5!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMTHCsDMwJzAwLjAiTiA3N8KwMTgnMDAuMCJF!5e0!3m2!1sen!2sin!4v1620000000000" width="100%" height="100%" style="border:0;" allowfullscreen="" loading="lazy"></iframe>
+        </div>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,150 @@
+{% extends "dashboard_base.html" %}
+{% block title %}Faculty Hub - MONTFORT SCHOOL{% endblock %}
+{% block extra_css %}
+<style>
+.teacher-profile-header {
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    border-radius: 32px;
+    padding: 3rem;
+    color: #fff;
+    margin-bottom: 2rem;
+    display: flex;
+    align-items: center;
+    gap: 2.5rem;
+    position: relative;
+    overflow: hidden;
+}
+.teacher-profile-header::after {
+    content: '';
+    position: absolute;
+    top: -20px;
+    right: -20px;
+    width: 150px;
+    height: 150px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 50%;
+    filter: blur(40px);
+}
+.faculty-avatar {
+    width: 100px;
+    height: 100px;
+    background: rgba(255,255,255,0.2);
+    backdrop-filter: blur(10px);
+    border-radius: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 3rem;
+    font-weight: 800;
+    border: 1px solid rgba(255,255,255,0.3);
+}
+.faculty-meta h1 { font-size: 1.75rem; font-weight: 800; margin-bottom: 0.5rem; }
+.faculty-meta p { opacity: 0.9; font-weight: 600; font-size: 1rem; }
+
+.quick-hub {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2.5rem;
+}
+.hub-card {
+    background: #fff;
+    border-radius: 24px;
+    padding: 2rem;
+    text-align: center;
+    border: 1px solid var(--border);
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    text-decoration: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+}
+.hub-card:hover {
+    transform: translateY(-8px);
+    box-shadow: var(--shadow-lg);
+    border-color: var(--primary-light);
+}
+.hub-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+}
+.hub-title { font-weight: 800; color: var(--text); font-size: 1rem; }
+
+@media (max-width: 768px) {
+    .teacher-profile-header {
+        flex-direction: column;
+        text-align: center;
+        padding: 2rem;
+    }
+    .faculty-avatar { margin: 0 auto; }
+}
+</style>
+{% endblock %}
+{% block content %}
+<div class="teacher-profile-header">
+  <div class="faculty-avatar">{{ (teacher.name[0] if teacher else session.name[0]) | upper }}</div>
+  <div class="faculty-meta">
+    <h1>Welcome, {{ teacher.name if teacher else session.name }}</h1>
+    <p><i class="fas fa-chalkboard-teacher"></i> {{ teacher.subject if teacher else 'Instructional Faculty' }} • Dept. of Excellence</p>
+    <div style="margin-top: 1rem; display: flex; gap: 1rem; opacity: 0.8; font-size: 0.85rem; font-weight: 600;">
+        <span>ID: {{ teacher.employee_id if teacher else 'TC-992' }}</span>
+        <span>•</span>
+        <span>DOE: {{ teacher.joining_date if teacher else 'Aug 2021' }}</span>
+    </div>
+  </div>
+</div>
+
+<div class="quick-hub">
+  <a href="{{ url_for('teacher_attendance') }}" class="hub-card">
+    <div class="hub-icon" style="background: #eff6ff; color: #2563eb;"><i class="fas fa-calendar-check"></i></div>
+    <span class="hub-title">Roll Call</span>
+    <p style="font-size: 0.8rem; color: var(--muted);">Log daily attendance for your classes.</p>
+  </a>
+  <a href="{{ url_for('teacher_marks') }}" class="hub-card">
+    <div class="hub-icon" style="background: #f0fdf4; color: #16a34a;"><i class="fas fa-chart-line"></i></div>
+    <span class="hub-title">Assessment</span>
+    <p style="font-size: 0.8rem; color: var(--muted);">Enter exam scores and evaluate growth.</p>
+  </a>
+  <a href="{{ url_for('teacher_assignments') }}" class="hub-card">
+    <div class="hub-icon" style="background: #fdf2f8; color: #db2777;"><i class="fas fa-tasks"></i></div>
+    <span class="hub-title">Taskmaster</span>
+    <p style="font-size: 0.8rem; color: var(--muted);">Manage homework and class projects.</p>
+  </a>
+  <a href="{{ url_for('teacher_students') }}" class="hub-card">
+    <div class="hub-icon" style="background: #fffbeb; color: #d97706;"><i class="fas fa-user-graduate"></i></div>
+    <span class="hub-title">Mentorship</span>
+    <p style="font-size: 0.8rem; color: var(--muted);">View and manage your student roster.</p>
+  </a>
+</div>
+
+<div class="section-card" style="padding: 2rem; background: #fff; border-radius: 28px; border: 1px solid var(--border);">
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+      <h3 style="font-size: 1.25rem; font-weight: 800; color: var(--text); display: flex; align-items: center; gap: 10px;">
+          <i class="fas fa-bullhorn" style="color: var(--secondary);"></i> Campus Alerts
+      </h3>
+  </div>
+  <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+    {% for a in announcements | reverse %}
+    <div style="padding: 1.5rem; border-radius: 20px; background: var(--bg); border: 1px solid var(--border); position: relative; overflow: hidden;">
+      <div style="position: absolute; top: 0; left: 0; width: 4px; height: 100%; background: var(--primary);"></div>
+      <h4 style="font-size: 1rem; font-weight: 800; color: var(--primary); margin-bottom: 0.5rem;">{{ a.title }}</h4>
+      <p style="font-size: 0.9rem; color: var(--muted); line-height: 1.6;">{{ a.content }}</p>
+      <div style="margin-top: 1rem; font-size: 0.75rem; font-weight: 700; color: var(--muted); opacity: 0.6; text-transform: uppercase;">
+          <i class="far fa-clock"></i> {{ a.created_at[:10] if a.created_at else 'PREVIOUS' }}
+      </div>
+    </div>
+    {% else %}
+    <div style="text-align: center; padding: 3rem;">
+        <i class="far fa-bell-slash" style="font-size: 3rem; color: var(--muted); opacity: 0.2; display: block; margin-bottom: 1.5rem;"></i>
+        <p style="color: var(--muted);">No ongoing notices at the moment.</p>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

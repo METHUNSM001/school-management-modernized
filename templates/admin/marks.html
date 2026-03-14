@@ -1,0 +1,162 @@
+{% extends "dashboard_base.html" %}
+{% block title %}Grading Center - MONTFORT SCHOOL{% endblock %}
+{% block extra_css %}
+<style>
+.marks-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+}
+.exam-summary-card {
+    background: #fff;
+    border-radius: 20px;
+    padding: 1.5rem;
+    border: 1px solid var(--border);
+    margin-bottom: 2rem;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+    box-shadow: var(--shadow-sm);
+}
+.summary-item label {
+    display: block;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    color: var(--muted);
+    font-weight: 700;
+    margin-bottom: 4px;
+    letter-spacing: 0.5px;
+}
+.summary-item span {
+    font-weight: 700;
+    color: var(--text);
+    font-size: 1.1rem;
+}
+.grade-badge {
+    padding: 6px 14px;
+    border-radius: 10px;
+    font-weight: 800;
+    font-size: 0.85rem;
+    display: inline-block;
+}
+.row-marks-input {
+    width: 90px;
+    height: 40px;
+    border-radius: 10px;
+    text-align: center;
+    font-weight: 700;
+    font-size: 1rem;
+    color: var(--primary);
+}
+</style>
+{% endblock %}
+{% block content %}
+{% if exam %}
+<div class="marks-header">
+  <div>
+    <h1 style="font-size: 1.75rem; font-weight: 800; color: var(--text); letter-spacing: -0.5px;">Performance Grading</h1>
+    <p style="color: var(--muted); font-size: 0.9rem; font-weight: 500;">Entering assessment results for {{ exam.name }}.</p>
+  </div>
+  <a href="{{ url_for('admin_exams') }}" class="btn btn-outline" style="height: 48px; border-radius: 12px; padding: 0 20px;">
+    <i class="fas fa-arrow-left"></i> Return to Exams
+  </a>
+</div>
+
+<div class="exam-summary-card">
+    <div class="summary-item">
+        <label>Examination</label>
+        <span>{{ exam.name }}</span>
+    </div>
+    <div class="summary-item">
+        <label>Course / Subject</label>
+        <span>{{ subjects_map.get(exam.subject_id|string,'N/A') }}</span>
+    </div>
+    <div class="summary-item">
+        <label>Assessment Date</label>
+        <span>{{ exam.exam_date }}</span>
+    </div>
+    <div class="summary-item">
+        <label>Total Value</label>
+        <span style="color: var(--primary);">{{ exam.max_marks }} Marks</span>
+    </div>
+</div>
+
+<form method="POST">
+  <input type="hidden" name="exam_id" value="{{ exam.id }}">
+  <div class="card" style="border-radius: 20px; border: none; box-shadow: var(--shadow-md);">
+    <div style="padding: 1.5rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;">
+        <h3 style="font-size: 1.1rem; font-weight: 800; color: var(--text);"><i class="fas fa-list-ol" style="color: var(--secondary);"></i> Candidate List ({{ students|length }})</h3>
+        <span style="font-size: 0.8rem; color: var(--muted); font-weight: 600;">Use decimal values if required (e.g. 75.5)</span>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th style="padding-left: 24px;">#</th>
+            <th>Candidate Name</th>
+            <th>Roll No</th>
+            <th style="width: 150px;">Obtained Marks</th>
+            <th style="width: 120px;">Grade</th>
+            <th>Instructor Remarks</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for s in students %}
+          {% set m = marks_map.get(s.id|string, {}) %}
+          <tr>
+            <td style="padding-left: 24px; color: var(--muted); font-weight: 700;">{{ loop.index }}</td>
+            <td style="font-weight: 600; color: var(--text);">{{ s.name }}</td>
+            <td style="font-weight: 600; color: var(--muted);">{{ s.roll_no }}</td>
+            <input type="hidden" name="student_ids" value="{{ s.id }}">
+            <td>
+              <input type="number" name="marks" class="form-control row-marks-input" value="{{ m.marks_obtained if m else '' }}" min="0" max="{{ exam.max_marks }}" step="0.5" onchange="calcGrade(this,{{ exam.max_marks }})">
+            </td>
+            <td>
+              {% set g = m.grade if m else '-' %}
+              <span class="grade-badge badge-{{ 'success' if g in ['A+','A','B+'] else 'warning' if g in ['B','C'] else 'danger' if g != '-' else 'secondary' }}">{{ g }}</span>
+            </td>
+            <td>
+              <input type="text" name="remarks" class="form-control" value="{{ m.remarks if m else '' }}" placeholder="Enter performance remark..." style="border-radius: 10px; height: 40px;">
+            </td>
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="6" style="text-align: center; padding: 5rem 2rem;">
+              <i class="fas fa-users-slash" style="font-size: 3rem; color: var(--muted); opacity: 0.2; display: block; margin-bottom: 1.5rem;"></i>
+              <h3 style="font-weight: 700; color: var(--text);">No candidates found</h3>
+              <p style="color: var(--muted);">There are no students registered for this class assessment.</p>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <div style="padding: 2rem; border-top: 1px solid var(--border); display: flex; justify-content: flex-end;">
+      <button type="submit" class="btn btn-primary btn-lg" style="padding: 14px 45px; border-radius: 12px;">
+        <i class="fas fa-cloud-upload-alt"></i> Finalize & Commit Marks
+      </button>
+    </div>
+  </div>
+</form>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function calcGrade(input, max){
+  const val = parseFloat(input.value);
+  if(isNaN(val)) return;
+  const pct = (val/max)*100;
+  const g = pct>=90?'A+':pct>=80?'A':pct>=70?'B+':pct>=60?'B':pct>=50?'C':pct>=35?'D':'F';
+  const row = input.closest('tr');
+  const badge = row.querySelector('.grade-badge');
+  if(badge){
+    badge.textContent=g;
+    badge.className='grade-badge badge-'+(g.startsWith('A')||g==='B+'?'success':g==='B'||g==='C'?'warning':'danger');
+  }
+}
+</script>
+{% endblock %}

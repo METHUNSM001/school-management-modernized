@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block title %}Events - MONTFORT SENIOR SECONDARY SCHOOL{% endblock %}
+{% block content %}
+<!-- HERO SECTION -->
+<section style="background: linear-gradient(135deg, #ea580c 0%, #9a3412 100%); color: #fff; padding: 100px 0; position: relative; overflow: hidden;">
+    <div style="position: absolute; top: -50px; right: -50px; width: 250px; height: 250px; background: white; opacity: 0.1; filter: blur(80px); border-radius: 50%;"></div>
+    <div class="container" style="max-width: 900px; text-align: center; position: relative; z-index: 10;">
+        <h1 style="font-size: clamp(2.5rem, 6vw, 4rem); font-weight: 800; letter-spacing: -1.5px; line-height: 1.1; margin-bottom: 1.5rem;">Events & <span style="color: #fffb00;">Happening</span></h1>
+        <p style="font-size: 1.1rem; opacity: 0.9; font-weight: 500; max-width: 600px; margin: 0 auto;">Celebrate the vibrant spirit and achievements of our student community.</p>
+    </div>
+</section>
+
+<section style="padding: 100px 0;">
+    <div class="container" style="max-width: 1200px; padding: 0 1.5rem;">
+        {% if events %}
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 3rem;">
+            {% for e in events | reverse %}
+            <div class="event-card" style="background: var(--card); border: 1px solid var(--border); border-radius: 32px; overflow: hidden; box-shadow: var(--shadow-md); transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);" onmouseover="this.style.transform='translateY(-10px)'; this.style.boxShadow='var(--shadow-xl)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='var(--shadow-md)'">
+                <div style="height: 240px; position: relative; overflow: hidden;">
+                    {% if e.photo %}
+                    <img src="{{ url_for('uploaded_file', filename=e.photo) }}" style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.6s;" alt="{{ e.title }}" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">
+                    {% else %}
+                    <div style="width: 100%; height: 100%; background: linear-gradient(135deg, #fef3c7 0%, #fbbf24 100%); display: flex; align-items: center; justify-content: center;">
+                        <i class="fas fa-calendar-star" style="font-size: 4rem; color: rgba(217, 119, 6, 0.2);"></i>
+                    </div>
+                    {% endif %}
+                    <div style="position: absolute; top: 20px; right: 20px; background: white; padding: 8px 16px; border-radius: 12px; box-shadow: var(--shadow-sm); text-align: center;">
+                        <span style="display: block; font-size: 1.1rem; font-weight: 800; color: var(--text); line-height: 1.1;">{{ e.event_date.split('-')[2] if '-' in e.event_date else e.event_date }}</span>
+                        <span style="display: block; font-size: 0.7rem; font-weight: 700; color: var(--muted); text-transform: uppercase;">{{ e.event_date.split('-')[1] if '-' in e.event_date else '' }}</span>
+                    </div>
+                </div>
+                <div style="padding: 2.5rem;">
+                    <h3 style="font-size: 1.5rem; font-weight: 800; color: var(--text); margin-bottom: 1rem; line-height: 1.3;">{{ e.title }}</h3>
+                    <p style="color: var(--muted); line-height: 1.7; font-size: 0.95rem; margin-bottom: 2rem; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;">{{ e.description }}</p>
+                    <div style="display: flex; gap: 1.5rem; border-top: 1px solid #f1f5f9; padding-top: 1.5rem;">
+                        <div style="display: flex; align-items: center; gap: 8px; color: var(--primary); font-size: 0.85rem; font-weight: 700;">
+                            <i class="fas fa-clock"></i> {{ e.event_date }}
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 8px; color: var(--secondary); font-size: 0.85rem; font-weight: 700;">
+                            <i class="fas fa-map-marker-alt"></i> {{ e.location }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div style="text-align: center; padding: 100px 0;">
+            <div style="width: 100px; height: 100px; background: #fff7ed; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 2rem;">
+                <i class="fas fa-calendar-day" style="font-size: 2.5rem; color: #fdba74;"></i>
+            </div>
+            <h3 style="color: var(--text); font-weight: 800; font-size: 1.5rem;">No upcoming events!</h3>
+            <p style="color: var(--muted);">Check back soon to stay connected with our latest activities.</p>
+        </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}
