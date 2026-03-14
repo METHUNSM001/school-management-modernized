@@ -42,7 +42,7 @@ pip install -r requirements.txt
 python run.py
 ```
 
-Then open: **http://localhost:5000**
+Then open: https://school-management-modernized.onrender.com/
 
 ---
 
